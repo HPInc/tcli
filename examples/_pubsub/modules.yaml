@@ -1,0 +1,4 @@
+modules:
+- name: pubsub
+  config: data/pubsub.json
+  description: AWS sns/sqs support

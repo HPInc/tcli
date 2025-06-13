@@ -1,0 +1,4 @@
+default_profile: local
+profiles:
+- name: local
+  modules_dir: .
