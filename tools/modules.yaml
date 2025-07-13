@@ -1,0 +1,10 @@
+modules:
+- name: petstore
+  config: data/petstore.json
+  description: Swagger Petstore
+- name: tcp
+  config: data/tcp.json
+  description: TCP Server check
+- name: utils
+  config: data/utils.json
+  description: utils

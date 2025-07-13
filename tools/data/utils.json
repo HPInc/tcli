@@ -1,0 +1,23 @@
+{
+  "paths": {
+    "/echo": {
+      "post": {
+        "description": "",
+        "extension": {
+          "class": "echo"
+        },
+        "operationId": "echo",
+        "parameters": [
+          {
+            "default": "{}",
+            "description": "data",
+            "name": "data",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "summary": "echo"
+      }
+    }
+  }
+}

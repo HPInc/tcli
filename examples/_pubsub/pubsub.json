@@ -1,0 +1,74 @@
+{
+  "paths": {
+    "/sns": {
+      "post": {
+        "description": "",
+        "extension": {
+          "class": "sns"
+        },
+        "operationId": "send_sns",
+        "parameters": [
+          {
+            "description": "event name",
+            "name": "name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "description": "data",
+            "name": "data",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "default": "arn:aws:sns:us-east-1:000000000000:dev",
+            "description": "arn",
+            "name": "arn",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "default": "http://localhost:4566",
+            "description": "endpoint",
+            "name": "endpoint",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "summary": "send sns message"
+      }
+    },
+    "/sqs": {
+      "post": {
+        "description": "",
+        "extension": {
+          "class": "sqs"
+        },
+        "operationId": "send_sqs",
+        "parameters": [
+          {
+            "description": "data",
+            "name": "data",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "default": "http://sqs.us-east-1.localstack.local.dev:4566/000000000000/dev",
+            "description": "url",
+            "name": "queue_url",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "default": "http://localhost:4566",
+            "description": "endpoint",
+            "name": "endpoint",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "summary": "send sqs message"
+      }
+    }
+  }
+}

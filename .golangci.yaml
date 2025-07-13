@@ -1,0 +1,9 @@
+version: '2'
+
+linters:
+  default: none
+  # This list of linters is not a recommendation (same thing for all this configuration file).
+  # We intentionally use a limited set of linters.
+  # See the comment on top of this file.
+  enable:
+  - errcheck
