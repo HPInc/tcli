@@ -128,8 +128,8 @@ func (p *ParseResult) ValidateParams() error {
 	for _, v := range p.Method.Parameters {
 		val, ok := p.Values[v.Name]
 		if !ok || val == nil || *val == "" {
-			log.Errorf("Error: No value for required param: %s\n", v.Name)
 			if v.Required {
+				log.Errorf("Error: No value for required param: %s\n", v.Name)
 				return common.ErrMissingRequiredParam
 			} else {
 				continue
@@ -151,12 +151,13 @@ func (p *ParseResult) getParamValues() (*paramsResult, error) {
 		headers:   make(http.Header),
 	}
 	for _, v := range p.Method.Parameters {
-		match := fmt.Sprintf("{%s}", v.Name)
 		val, ok := p.Values[v.Name]
-		if !ok || val == nil {
+		if !ok || val == nil || *val == "" {
+			log.Debugf("Skipping empty parameter: %v\n", v.Name)
 			continue
 		}
 		if v.In == parser.InPath {
+			match := fmt.Sprintf("{%s}", v.Name)
 			result.path = strings.Replace(result.path, match, *val, 1)
 		} else if v.In == parser.InQuery {
 			result.urlValues.Set(v.Name, fmt.Sprintf("%s", *val))
