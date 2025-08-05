@@ -1,0 +1,15 @@
+name: tcli ci
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check out repository code
+      uses: actions/checkout@v4
+
+    - name: Run sanity tests
+      run: make sanity
+
+    - name: Cleanup
+      if: always()
+      run: make ci_clean

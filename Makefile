@@ -21,6 +21,9 @@ build:
 	go build -o $(BIN) \
 	-ldflags "-s -w" cmd/main.go
 
+vendor:
+	go mod vendor
+
 vet:
 	go vet ./...
 
@@ -50,6 +53,9 @@ trivy: docker
 
 clean:
 	go clean
+
+ci_clean: clean
+	docker logout
 
 install: build
 	./tools/install.sh
