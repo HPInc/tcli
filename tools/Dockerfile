@@ -1,4 +1,4 @@
-FROM golang:1.24.4-alpine3.21 AS builder
+FROM golang:1.25.0-alpine3.21 AS builder
 
 ADD . /go/src/tcli
 WORKDIR /go/src/tcli
