@@ -1,5 +1,5 @@
 #!/bin/sh
-LINTER_IMAGE=golangci/golangci-lint:v2.1.6-alpine
+LINTER_IMAGE=golangci/golangci-lint:v2.4.0-alpine
 DIR=${1:-$(pwd)}
 
 # flag overrides
