@@ -1,4 +1,4 @@
-FROM golang:1.25.0-alpine3.21 AS builder
+FROM golang:1.25.1-alpine3.22 AS builder
 
 ADD . /go/src/tcli
 WORKDIR /go/src/tcli
@@ -9,7 +9,9 @@ go build -o bin/tcli \
 -ldflags "-s -w" cmd/main.go
 
 # use a minimal alpine image
-FROM alpine:3.21
+FROM alpine:3.22
+RUN apk update --no-cache && \
+apk upgrade
 
 # make tcli available in path
 COPY --from=builder /go/src/tcli/bin/tcli /usr/local/bin/tcli
