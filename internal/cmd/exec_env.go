@@ -4,9 +4,9 @@
 package cmd
 
 import (
-	"openapi/internal/common"
-	"openapi/internal/config"
-	"openapi/internal/parser"
+	"tcli/internal/common"
+	"tcli/internal/config"
+	"tcli/internal/parser"
 )
 
 type Environment struct {

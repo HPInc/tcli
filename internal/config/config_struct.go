@@ -3,7 +3,7 @@
 
 package config
 
-import "openapi/internal/parser"
+import "tcli/internal/parser"
 
 // proxy config
 type Proxy struct {

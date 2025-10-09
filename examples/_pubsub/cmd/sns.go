@@ -5,7 +5,7 @@ package cmd
 
 import (
 	"log"
-	"openapi/internal/common"
+	"tcli/internal/common"
 )
 
 func init() {

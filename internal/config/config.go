@@ -4,9 +4,9 @@
 package config
 
 import (
-	"openapi/internal/common"
 	"os"
 	"path/filepath"
+	"tcli/internal/common"
 
 	"gopkg.in/yaml.v2"
 )

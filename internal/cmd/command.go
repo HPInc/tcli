@@ -4,8 +4,8 @@
 package cmd
 
 import (
-	"openapi/internal/common"
-	"openapi/internal/config"
+	"tcli/internal/common"
+	"tcli/internal/config"
 )
 
 // hold commands in a module

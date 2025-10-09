@@ -1,4 +1,4 @@
-module openapi
+module tcli
 
 go 1.25
 

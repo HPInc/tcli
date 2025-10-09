@@ -6,7 +6,7 @@ package cmd
 import (
 	"fmt"
 	"net"
-	"openapi/internal/utils"
+	"tcli/internal/utils"
 )
 
 type TcpCommand struct {

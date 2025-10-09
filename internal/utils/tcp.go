@@ -4,7 +4,7 @@
 package utils
 
 import (
-	"openapi/internal/config"
+	"tcli/internal/config"
 	"time"
 )
 

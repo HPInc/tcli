@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"openapi/internal/config"
+	"tcli/internal/config"
 )
 
 const (
