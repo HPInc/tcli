@@ -21,7 +21,7 @@ const GlobalFlags = "global"
 
 type GlobalResult struct {
 	Count       uint
-	RetryCount  uint
+	RetryCount  int64
 	BasePath    string
 	Scheme      string
 	Server      string
@@ -47,6 +47,8 @@ type paramsResult struct {
 	headers   http.Header
 }
 
+// New creates a new ParseResult and initializes the flag set
+// with the parameters from the given method and global flags.
 func New(o *parser.Method, in *common.Input, r *parser.Root) *ParseResult {
 	fs := flag.NewFlagSet(o.OperationId, flag.ExitOnError)
 
@@ -71,6 +73,8 @@ func New(o *parser.Method, in *common.Input, r *parser.Root) *ParseResult {
 	return &p
 }
 
+// getParamVal returns the value of the parameter from the input map
+// if it exists, otherwise it returns the default value of the parameter.
 func getParamVal(p *parser.Parameter, i *common.Input) string {
 	if i != nil {
 		if input, ok := (*i)[p.Name]; ok {
@@ -83,12 +87,13 @@ func getParamVal(p *parser.Parameter, i *common.Input) string {
 	return p.DefaultStr()
 }
 
+// getGlobal initializes the global flags and returns a GlobalResult.
 func getGlobal(fs *flag.FlagSet, r *parser.Root) *GlobalResult {
 	g := GlobalResult{}
 	fs.StringVar(&g.BasePath, "base_path", getBasePath(r), "http base path")
 	fs.StringVar(&g.Doc, "doc", "none", "Generate docs (none, shell)")
 	fs.StringVar(&g.Format, "format", "", "json format")
-	fs.UintVar(&g.RetryCount, "retry_count", 10, "Number of retries on failure")
+	fs.Int64Var(&g.RetryCount, "retry_count", 10, "Number of retries on failure")
 	fs.StringVar(&g.Scheme, "scheme", getScheme(r), "Scheme")
 	fs.StringVar(&g.Server, "server", getHost(r), "Server")
 	fs.UintVar(&g.Count, "count", 1, "Number of times to repeat command")
@@ -124,6 +129,8 @@ func getScheme(r *parser.Root) string {
 	}
 }
 
+// ValidateParams checks that all required parameters have values
+// and sets global configuration options based on the parsed values.
 func (p *ParseResult) ValidateParams() error {
 	for _, v := range p.Method.Parameters {
 		val, ok := p.Values[v.Name]
@@ -143,6 +150,8 @@ func (p *ParseResult) ValidateParams() error {
 	return nil
 }
 
+// getParamValues processes the parameters and returns a paramsResult
+// containing the URL values, path, body, and headers for the HTTP request.
 func (p *ParseResult) getParamValues() (*paramsResult, error) {
 	result := paramsResult{
 		urlValues: &url.Values{},

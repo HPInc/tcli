@@ -8,8 +8,12 @@ import (
 	"time"
 )
 
-func RetryWait(count uint, fn func() bool) bool {
-	for i := uint(1); i <= count; i++ {
+// RetryWait retries a function up to 'count' times, waiting an increasing amount of time between each attempt.
+// The wait time increases linearly (1s, 2s, 3s, ...).
+// If the function returns true, it stops retrying and returns true.
+// If all attempts fail, it returns false.
+func RetryWait(count int64, fn func() bool) bool {
+	for i := int64(1); i <= count; i++ {
 		if fn() {
 			return true
 		}
