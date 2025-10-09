@@ -5,7 +5,7 @@ package parser
 
 import (
 	"fmt"
-	"openapi/internal/common"
+	"tcli/internal/common"
 )
 
 func (p *Parameter) DefaultStr() string {

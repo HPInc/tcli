@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"openapi/internal/utils"
 	"strconv"
+	"tcli/internal/utils"
 )
 
 const IgnoreError = -1

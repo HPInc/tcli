@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"openapi/internal/common"
-	"openapi/internal/parser"
+	"tcli/internal/common"
+	"tcli/internal/parser"
 
 	"gopkg.in/yaml.v2"
 )

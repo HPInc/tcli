@@ -10,10 +10,10 @@ import (
 	"os"
 	"strings"
 
-	"openapi/internal/cmd"
-	"openapi/internal/common"
-	"openapi/internal/config"
-	"openapi/internal/parser"
+	"tcli/internal/cmd"
+	"tcli/internal/common"
+	"tcli/internal/config"
+	"tcli/internal/parser"
 )
 
 const (
@@ -87,6 +87,9 @@ func call(m *parser.Method, err error) error {
 		}
 	} else {
 		err = env.Exec(m, nil)
+	}
+	if err != nil {
+		return err
 	}
 	return env.Wait()
 }

@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	"openapi/internal/common"
+	"tcli/internal/common"
 )
 
 const definitionsPrefix = "#/definitions/"

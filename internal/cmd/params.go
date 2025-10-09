@@ -10,9 +10,9 @@ import (
 	"net/url"
 	"strings"
 
-	"openapi/internal/common"
-	"openapi/internal/config"
-	"openapi/internal/parser"
+	"tcli/internal/common"
+	"tcli/internal/config"
+	"tcli/internal/parser"
 )
 
 const JwtParam = "jwt"

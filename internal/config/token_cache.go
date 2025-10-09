@@ -5,8 +5,8 @@ package config
 
 import (
 	"fmt"
-	"openapi/internal/common"
 	"strings"
+	"tcli/internal/common"
 )
 
 const (

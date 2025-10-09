@@ -7,8 +7,8 @@ package utils
 import (
 	"io"
 	"net/http"
-	"openapi/internal/config"
 	"strconv"
+	"tcli/internal/config"
 	"time"
 )
 

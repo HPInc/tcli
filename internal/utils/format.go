@@ -7,8 +7,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"openapi/internal/common"
 	"strings"
+	"tcli/internal/common"
 
 	"github.com/itchyny/gojq"
 )
