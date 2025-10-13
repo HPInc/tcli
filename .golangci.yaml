@@ -7,3 +7,4 @@ linters:
   # See the comment on top of this file.
   enable:
   - errcheck
+  - gosec

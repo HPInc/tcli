@@ -23,7 +23,7 @@ type Do func(req *http.Request) (*http.Response, error)
 type Client struct {
 	HttpClient *http.Client
 	Do         Do
-	MaxRetry   uint
+	MaxRetry   int64
 	StatusCode int
 }
 
@@ -36,7 +36,7 @@ func NewClient() *Client {
 }
 
 // retry enabled client
-func RetriableClient(retries uint) *Client {
+func RetriableClient(retries int64) *Client {
 	c := NewClient()
 	c.Do = c.RetriableDo
 	c.MaxRetry = retries
@@ -44,12 +44,15 @@ func RetriableClient(retries uint) *Client {
 	return c
 }
 
-func RetriableClientWithStatus(retries uint, status int) *Client {
+// retry enabled client with specific status code to wait for
+// e.g. wait for 200 OK
+func RetriableClientWithStatus(retries int64, status int) *Client {
 	c := RetriableClient(retries)
 	c.StatusCode = status
 	return c
 }
 
+// get with retry
 func (c *Client) Get(url string) (*http.Response, error) {
 	return c.doRequest(url, "GET", nil)
 }
@@ -70,10 +73,11 @@ func (c *Client) doRequest(url, method string, body io.Reader) (*http.Response, 
 	return c.Do(req)
 }
 
+// retry logic
 func (c *Client) RetriableDo(req *http.Request) (*http.Response, error) {
 	logger := config.GetLogger()
 	logger.HttpRequest(req)
-	var i uint
+	var i int64
 	for {
 		resp, err := c.HttpClient.Do(req)
 		if c.RetryWithBackoff(logger, i, resp, err) {
@@ -85,8 +89,11 @@ func (c *Client) RetriableDo(req *http.Request) (*http.Response, error) {
 	}
 }
 
+// determine if we should retry, and backoff if so
+// returns true if we should retry
+// sleeps for backoff duration if retrying
 func (c *Client) RetryWithBackoff(logger *config.Log,
-	i uint, resp *http.Response, err error) bool {
+	i int64, resp *http.Response, err error) bool {
 	doRetry := false
 	retrySeconds := time.Second * time.Duration(i)
 	if err != nil {
@@ -113,6 +120,8 @@ func (c *Client) RetryWithBackoff(logger *config.Log,
 	return false
 }
 
+// get the retry-after header value in seconds
+// default to DefaultRetryAfterSeconds if not present or invalid
 func getRetryAfterHeaderValue(resp *http.Response) time.Duration {
 	retryAfter := DefaultRetryAfterSeconds
 	var err error

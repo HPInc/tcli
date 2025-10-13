@@ -58,7 +58,7 @@ func (c *HttpCommand) http() error {
 		utils.AddAuthorizationHeader(req, *p.Values[JwtParam])
 	}
 
-	client := utils.RetriableClient(p.Global.RetryCount)
+	client := utils.RetriableClient(int64(p.Global.RetryCount))
 	resp, err := client.Do(req)
 	if err != nil {
 		log.Fatalf("Response error: %v\n", err)
