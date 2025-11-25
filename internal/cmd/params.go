@@ -10,9 +10,9 @@ import (
 	"net/url"
 	"strings"
 
-	"tcli/internal/common"
-	"tcli/internal/config"
-	"tcli/internal/parser"
+	"github.com/hpinc/tcli/internal/common"
+	"github.com/hpinc/tcli/internal/config"
+	"github.com/hpinc/tcli/internal/parser"
 )
 
 const JwtParam = "jwt"

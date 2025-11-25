@@ -4,8 +4,9 @@
 package utils
 
 import (
-	"tcli/internal/config"
 	"time"
+
+	"github.com/hpinc/tcli/internal/config"
 )
 
 // RetryWait retries a function up to 'count' times, waiting an increasing amount of time between each attempt.

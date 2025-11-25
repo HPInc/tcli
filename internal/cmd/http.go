@@ -9,7 +9,8 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-	"tcli/internal/utils"
+
+	"github.com/hpinc/tcli/internal/utils"
 )
 
 const IgnoreError = -1

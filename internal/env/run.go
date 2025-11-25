@@ -10,10 +10,10 @@ import (
 	"os"
 	"strings"
 
-	"tcli/internal/cmd"
-	"tcli/internal/common"
-	"tcli/internal/config"
-	"tcli/internal/parser"
+	"github.com/hpinc/tcli/internal/cmd"
+	"github.com/hpinc/tcli/internal/common"
+	"github.com/hpinc/tcli/internal/config"
+	"github.com/hpinc/tcli/internal/parser"
 )
 
 const (

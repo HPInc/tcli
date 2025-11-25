@@ -9,7 +9,7 @@ import (
 	"os"
 	"strings"
 
-	"tcli/internal/common"
+	"github.com/hpinc/tcli/internal/common"
 )
 
 const definitionsPrefix = "#/definitions/"

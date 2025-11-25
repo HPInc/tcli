@@ -4,8 +4,8 @@
 package cmd
 
 import (
-	"tcli/internal/common"
-	"tcli/internal/config"
+	"github.com/hpinc/tcli/internal/common"
+	"github.com/hpinc/tcli/internal/config"
 )
 
 // hold commands in a module

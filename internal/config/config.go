@@ -6,7 +6,8 @@ package config
 import (
 	"os"
 	"path/filepath"
-	"tcli/internal/common"
+
+	"github.com/hpinc/tcli/internal/common"
 
 	"gopkg.in/yaml.v2"
 )

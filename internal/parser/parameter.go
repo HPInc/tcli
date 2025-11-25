@@ -5,7 +5,8 @@ package parser
 
 import (
 	"fmt"
-	"tcli/internal/common"
+
+	"github.com/hpinc/tcli/internal/common"
 )
 
 func (p *Parameter) DefaultStr() string {

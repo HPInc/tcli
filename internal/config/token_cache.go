@@ -6,7 +6,8 @@ package config
 import (
 	"fmt"
 	"strings"
-	"tcli/internal/common"
+
+	"github.com/hpinc/tcli/internal/common"
 )
 
 const (

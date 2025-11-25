@@ -1,4 +1,4 @@
-module tcli
+module github.com/hpinc/tcli
 
 go 1.25
 
