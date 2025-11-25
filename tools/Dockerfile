@@ -1,4 +1,4 @@
-FROM golang:1.25.1-alpine3.22 AS builder
+FROM golang:1.25.3-alpine3.22 AS builder
 
 ADD . /go/src/tcli
 WORKDIR /go/src/tcli
@@ -9,9 +9,10 @@ go build -o bin/tcli \
 -ldflags "-s -w" cmd/main.go
 
 # use a minimal alpine image
-FROM alpine:3.22
+FROM alpine:3.22.2
 RUN apk update --no-cache && \
-apk upgrade
+apk upgrade && \
+apk add busybox=1.37.0-r20
 
 # make tcli available in path
 COPY --from=builder /go/src/tcli/bin/tcli /usr/local/bin/tcli
