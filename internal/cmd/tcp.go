@@ -6,7 +6,8 @@ package cmd
 import (
 	"fmt"
 	"net"
-	"tcli/internal/utils"
+
+	"github.com/hpinc/tcli/internal/utils"
 )
 
 type TcpCommand struct {

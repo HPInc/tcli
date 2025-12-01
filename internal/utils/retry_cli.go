@@ -8,8 +8,9 @@ import (
 	"io"
 	"net/http"
 	"strconv"
-	"tcli/internal/config"
 	"time"
+
+	"github.com/hpinc/tcli/internal/config"
 )
 
 const (

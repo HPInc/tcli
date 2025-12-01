@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"tcli/internal/common"
-	"tcli/internal/parser"
+	"github.com/hpinc/tcli/internal/common"
+	"github.com/hpinc/tcli/internal/parser"
 
 	"gopkg.in/yaml.v2"
 )

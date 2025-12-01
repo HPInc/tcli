@@ -8,7 +8,8 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	"tcli/internal/common"
+
+	"github.com/hpinc/tcli/internal/common"
 
 	"github.com/itchyny/gojq"
 )

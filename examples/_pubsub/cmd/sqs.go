@@ -5,7 +5,8 @@ package cmd
 
 import (
 	"log"
-	"tcli/internal/common"
+
+	"github.com/hpinc/tcli/internal/common"
 )
 
 func init() {

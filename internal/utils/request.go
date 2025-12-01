@@ -7,7 +7,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"tcli/internal/config"
+
+	"github.com/hpinc/tcli/internal/config"
 )
 
 const (
