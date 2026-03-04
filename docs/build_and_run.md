@@ -53,6 +53,8 @@ The following changes are made to your system:
 - file `/usr/local/bin/tcli` is created or updated
   - note: requires sudo if you are non root
 
+To add your own Swagger/OpenAPI service as a new command module, see [How to add a module](/docs/modules.md).
+
 ### How to build and run from docker
 The following is only tested in linux but should work similarly for windows.
 This method will depend on docker and a couple of base images available. The advantage
@@ -192,6 +194,7 @@ This will use the number of available cpu cores to set the max parallel paths.
 
 ### References
 - [README.md](/README.md)
+- [How to add a module](/docs/modules.md)
 - [Explanation of test code](/docs/example_explanation.md)
 - [Examples](/examples/README.md)
 - Format
