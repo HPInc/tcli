@@ -80,6 +80,7 @@ func (c *Client) RetriableDo(req *http.Request) (*http.Response, error) {
 	logger.HttpRequest(req)
 	var i int64
 	for {
+		// #nosec G704 -- request target is intentionally provided by CLI input.
 		resp, err := c.HttpClient.Do(req)
 		if c.RetryWithBackoff(logger, i, resp, err) {
 			logger.Debugf("%d/%d\n", i, c.MaxRetry)
