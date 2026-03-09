@@ -77,6 +77,7 @@ If fully supported for multi-level json input, the `-format` feature can be much
 
 ### References
 - [How to build and run](/docs/build_and_run.md)
+- [How to add a module](/docs/modules.md)
 - [Explanation of test code](/docs/example_explanation.md)
 - [Examples](/examples/README.md)
 - Formatting output
