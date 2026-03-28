@@ -44,7 +44,7 @@ func (c *HttpCommand) http() error {
 		url,
 		getData(result.body))
 	if err != nil {
-		log.Errorf("Request error: %v\n", err)
+		log.Fatalf("Request error: %v\n", err)
 	}
 	req.Header = result.headers
 	if len(*result.urlValues) > 0 {

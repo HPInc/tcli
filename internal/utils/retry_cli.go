@@ -80,10 +80,20 @@ func (c *Client) RetriableDo(req *http.Request) (*http.Response, error) {
 	logger.HttpRequest(req)
 	var i int64
 	for {
+		if i > 0 && req.GetBody != nil {
+			body, err := req.GetBody()
+			if err != nil {
+				return nil, err
+			}
+			req.Body = body
+		}
 		// #nosec G704 -- request target is intentionally provided by CLI input.
 		resp, err := c.HttpClient.Do(req)
 		if c.RetryWithBackoff(logger, i, resp, err) {
 			logger.Debugf("%d/%d\n", i, c.MaxRetry)
+			if resp != nil && resp.Body != nil {
+				_ = resp.Body.Close()
+			}
 			i++
 		} else {
 			return resp, err
@@ -97,23 +107,27 @@ func (c *Client) RetriableDo(req *http.Request) (*http.Response, error) {
 func (c *Client) RetryWithBackoff(logger *config.Log,
 	i int64, resp *http.Response, err error) bool {
 	doRetry := false
+	statusCode := 0
 	retrySeconds := time.Second * time.Duration(i)
+	if resp != nil {
+		statusCode = resp.StatusCode
+	}
 	if err != nil {
 		logger.Errorf("error = %v, retriable.\n", err)
 		doRetry = true
-	} else if resp.StatusCode == 0 || resp.StatusCode > 500 {
-		logger.Debugf("status = %d, retriable.\n", resp.StatusCode)
+	} else if statusCode == 0 || statusCode >= 500 {
+		logger.Debugf("status = %d, retriable.\n", statusCode)
 		doRetry = true
-	} else if resp.StatusCode == 429 {
+	} else if statusCode == 429 {
 		doRetry = true
 		retrySeconds = time.Duration(getRetryAfterHeaderValue(resp))
 		logger.Debugf(
 			"status = %d, retry_after = %d seconds, retriable.\n",
-			resp.StatusCode, retrySeconds)
-	} else if c.StatusCode > 0 && resp.StatusCode != c.StatusCode {
+			statusCode, retrySeconds)
+	} else if c.StatusCode > 0 && statusCode != c.StatusCode {
 		// allow for an override to wait for a specific code
 		doRetry = true
-		logger.Debugf("status = %d, retrying till %d.\n", resp.StatusCode, c.StatusCode)
+		logger.Debugf("status = %d, retrying till %d.\n", statusCode, c.StatusCode)
 	}
 	if doRetry && i < c.MaxRetry {
 		time.Sleep(retrySeconds)
@@ -126,6 +140,9 @@ func (c *Client) RetryWithBackoff(logger *config.Log,
 // default to DefaultRetryAfterSeconds if not present or invalid
 func getRetryAfterHeaderValue(resp *http.Response) time.Duration {
 	retryAfter := DefaultRetryAfterSeconds
+	if resp == nil {
+		return retryAfter
+	}
 	var err error
 	var i int
 	if val, ok := resp.Header[RetryAfter]; ok {

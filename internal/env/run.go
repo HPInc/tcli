@@ -77,7 +77,10 @@ func call(m *parser.Method, err error) error {
 		var any common.Input
 		for err == nil {
 			err = input.Decode(&any)
-			if err == io.EOF {
+			if err != nil {
+				if err == io.EOF {
+					err = nil
+				}
 				break
 			}
 			err = env.Exec(m, &any)
