@@ -4,9 +4,7 @@
 package parser
 
 import (
-	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/hpinc/tcli/internal/common"
@@ -130,18 +128,6 @@ func (r *Root) NeedJwt(s string) bool {
 		}
 	}
 	return false
-}
-
-func ReadSwagger(f string) (*Root, error) {
-	bytes, err := os.ReadFile(f) // #nosec G304
-	if err != nil {
-		return nil, err
-	}
-	var r Root
-	if err := json.Unmarshal(bytes, &r); err != nil {
-		return nil, err
-	}
-	return &r, nil
 }
 
 func (m *Method) hasOperation(tag string) bool {

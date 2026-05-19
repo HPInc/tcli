@@ -33,10 +33,13 @@ imports:
 tidy:
 	go mod tidy
 
-sanity: lint trivy
+sanity: lint test trivy
 
 lint:
 	./tools/run_linter.sh
+
+test:
+	go test ./...
 
 docker:
 	docker build -t $(IMAGE) -f tools/Dockerfile .

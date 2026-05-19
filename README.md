@@ -64,12 +64,7 @@ To find even more sophisticated uses of `tcli`, see [stress test with tcli](/doc
 
 #### Areas we need help with
 
-- openapi parsing is not complete and does not address all versions.
-  - json path processing is not implemented.
-  - maybe it is better to delegate spec parsing to another library.
-`tcli` was built to work with openapi specs from projects it was used to test.
-It did not have a reason to expand out. If you are looking to contribute, this is
-an area that can use your help.
+- testing
 
 - `-format` does not handle input beyond simple one level input like `5`, `{"data":5}` etc.
 If fully supported for multi-level json input, the `-format` feature can be much more versatile.
@@ -80,6 +75,8 @@ If fully supported for multi-level json input, the `-format` feature can be much
 - [How to add a module](/docs/modules.md)
 - [Explanation of test code](/docs/example_explanation.md)
 - [Examples](/examples/README.md)
+- Parsing openapi spec
+  - [pb33f/libopenapi](https://github.com/pb33f/libopenapi)
 - Formatting output
   - [jq lang](https://github.com/jqlang/jq/wiki/jq-Language-Description)
   - [gojq use as library](https://github.com/itchyny/gojq?tab=readme-ov-file#usage-as-a-library)

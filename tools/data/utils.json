@@ -1,11 +1,9 @@
 {
+  "host": "localhost:8080",
   "paths": {
     "/echo": {
       "post": {
         "description": "",
-        "extension": {
-          "class": "echo"
-        },
         "operationId": "echo",
         "parameters": [
           {
@@ -16,8 +14,15 @@
             "type": "string"
           }
         ],
-        "summary": "echo"
+        "summary": "echo",
+        "x-extension": {
+          "class": "echo"
+        }
       }
     }
-  }
+  },
+  "schemes": [
+    "http"
+  ],
+  "swagger": "2.0"
 }
