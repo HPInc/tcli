@@ -1,4 +1,4 @@
-FROM golang:1.26-alpine3.22 AS builder
+FROM golang:1.26.3-alpine3.23 AS builder
 ADD . /go/src/tcli
 WORKDIR /go/src/tcli
 
@@ -8,7 +8,7 @@ go build -o bin/tcli \
 -ldflags "-s -w" cmd/main.go
 
 # use a minimal alpine image
-FROM alpine:3.23.3
+FROM alpine:3.23.4
 RUN apk update --no-cache && \
 apk upgrade && \
 apk add busybox=1.37.0-r30

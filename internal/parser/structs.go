@@ -13,65 +13,65 @@ const (
 
 // struct defs
 type Schema struct {
-	Ref        string      `json:"$ref"`
-	Definition *Definition `json:"-"`
+	Ref        string
+	Definition *Definition
 }
 
 type Parameter struct {
-	Name        string      `json:"name"`
-	Description string      `json:"description"`
-	Required    bool        `json:"required"`
-	In          string      `json:"in"`
-	Type        string      `json:"type,omitempty"`
-	Format      string      `json:"format,omitempty"`
-	Schema      *Schema     `json:"schema,omitempty"`
-	Default     interface{} `json:"default,omitempty"`
+	Name        string
+	Description string
+	Required    bool
+	In          string
+	Type        string
+	Format      string
+	Schema      *Schema
+	Default     interface{}
 }
 
 type Extension struct {
-	Class string `json:"class"`
+	Class string
 }
 
 type Method struct {
-	Summary     string      `json:"summary"`
-	Description string      `json:"description"`
-	OperationId string      `json:"operationId"`
-	Tags        []string    `json:"tags"`
-	Parameters  []Parameter `json:"parameters"`
+	Summary     string
+	Description string
+	OperationId string
+	Tags        []string
+	Parameters  []Parameter
 	MethodName  string
-	Consumes    []string `json:"consumes"`
+	Consumes    []string
 	Path        string
-	Extension   *Extension            `json:"extension,omitempty"`
-	Securities  []map[string][]string `json:"security"`
+	Extension   *Extension
+	Securities  []map[string][]string
 }
 
 type Path struct {
-	Get     *Method `json:"get,omitempty"`
-	Delete  *Method `json:"delete,omitempty"`
-	Options *Method `json:"options,omitempty"`
-	Patch   *Method `json:"patch,omitempty"`
-	Post    *Method `json:"post,omitempty"`
-	Put     *Method `json:"put,omitempty"`
+	Get     *Method
+	Delete  *Method
+	Options *Method
+	Patch   *Method
+	Post    *Method
+	Put     *Method
 }
 
 type ArrayItem struct {
-	Type   string `json:"type,omitempty"`
-	Format string `json:"format,omitempty"`
-	Ref    string `json:"$ref,omitempty"`
+	Type   string
+	Format string
+	Ref    string
 }
 
 type Property struct {
-	Type        string     `json:"type,omitempty"`
-	Format      string     `json:"format,omitempty"`
-	Description string     `json:"description,omitempty"`
-	Ref         string     `json:"$ref,omitempty"`
-	Items       *ArrayItem `json:"items,omitempty"`
+	Type        string
+	Format      string
+	Description string
+	Ref         string
+	Items       *ArrayItem
 }
 
 type Definition struct {
-	Type       string               `json:"type"`
-	Required   []string             `json:"required,omitempty"`
-	Properties map[string]*Property `json:"properties"`
+	Type       string
+	Required   []string
+	Properties map[string]*Property
 }
 
 // top level commands / sub commands
@@ -83,20 +83,20 @@ type Command struct {
 }
 
 type Tag struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	Name        string
+	Description string
 }
 
 type SecurityDefinition struct {
-	Type string `json:"type"`
+	Type string
 }
 
 type Root struct {
-	Host                string                        `json:"host"`
-	BasePath            string                        `json:"basePath"`
-	Schemes             []string                      `json:"schemes"`
-	Paths               map[string]*Path              `json:"paths,omitempty"`
-	Tags                []Tag                         `json:"tags"`
-	Definitions         map[string]Definition         `json:"definitions"`
-	SecurityDefinitions map[string]SecurityDefinition `json:"securityDefinitions"`
+	Host                string
+	BasePath            string
+	Schemes             []string
+	Paths               map[string]*Path
+	Tags                []Tag
+	Definitions         map[string]Definition
+	SecurityDefinitions map[string]SecurityDefinition
 }

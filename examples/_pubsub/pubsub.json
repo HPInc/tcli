@@ -3,9 +3,6 @@
     "/sns": {
       "post": {
         "description": "",
-        "extension": {
-          "class": "sns"
-        },
         "operationId": "send_sns",
         "parameters": [
           {
@@ -35,15 +32,15 @@
             "type": "string"
           }
         ],
-        "summary": "send sns message"
+        "summary": "send sns message",
+        "x-extension": {
+          "class": "sns"
+        }
       }
     },
     "/sqs": {
       "post": {
         "description": "",
-        "extension": {
-          "class": "sqs"
-        },
         "operationId": "send_sqs",
         "parameters": [
           {
@@ -67,8 +64,12 @@
             "type": "string"
           }
         ],
-        "summary": "send sqs message"
+        "summary": "send sqs message",
+        "x-extension": {
+          "class": "sqs"
+        }
       }
     }
-  }
+  },
+  "swagger": "2.0"
 }

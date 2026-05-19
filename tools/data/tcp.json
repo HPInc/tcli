@@ -3,16 +3,17 @@
     "/wait_for_server": {
       "post": {
         "description": "",
-        "extension": {
-          "class": "tcp"
-        },
         "operationId": "wait_for_server",
         "parameters": [],
-        "summary": "Wait for tcp server"
+        "summary": "Wait for tcp server",
+        "x-extension": {
+          "class": "tcp"
+        }
       }
     }
   },
   "schemes": [
     "tcp"
-  ]
+  ],
+  "swagger": "2.0"
 }
