@@ -1,6 +1,6 @@
 module github.com/hpinc/tcli
 
-go 1.26.4
+go 1.26.5
 
 require (
 	github.com/itchyny/gojq v0.12.19
