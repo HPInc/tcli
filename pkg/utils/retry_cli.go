@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/hpinc/tcli/internal/config"
+	"github.com/hpinc/tcli/pkg/config"
 )
 
 const (

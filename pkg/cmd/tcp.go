@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/hpinc/tcli/internal/utils"
+	"github.com/hpinc/tcli/pkg/utils"
 )
 
 type TcpCommand struct {
@@ -15,12 +15,12 @@ type TcpCommand struct {
 }
 
 func init() {
-	cmds["tcp"] = &TcpCommand{}
+	RegisterCommand("tcp", &TcpCommand{})
 }
 
 func (c *TcpCommand) Init(p *ParseResult) Command {
 	k := TcpCommand{}
-	k.baseInit(p, k.doTcpRetry)
+	k.InitBase(p, k.doTcpRetry)
 	return &k
 }
 

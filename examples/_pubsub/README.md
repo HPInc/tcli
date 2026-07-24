@@ -6,11 +6,24 @@ This example shows how to extend `tcli` to support aws `sns` and `sqs`
 - [pubsub spec](/examples/_pubsub/pubsub.json)
 - [pubsub cmd support](/examples/_pubsub/cmd)
 
+Now that tcli's reusable packages live under `pkg/` (instead of `internal/`),
+`sqs`/`sns` support ships as its own self-contained Go package
+(`examples/_pubsub/cmd`, `package pubsub`) that registers itself with
+`cmd.RegisterCommand` — no copying source files into tcli's tree required.
+
 To add pubsub as a module, do the following
 - add the module definition from modules.yaml to your tools/modules.yaml
 - copy `pubsub.json` to `tools/data`
-- copy files under `cmd` to `internal/cmd`
-- copy files under `common` to `internal/common`
+- blank-import the `pubsub` package from your own `main` (or from
+  `cmd/main.go` if you're building tcli directly) so its `init()`
+  registers the `sqs`/`sns` command classes:
+
+  ```go
+  import (
+      _ "github.com/hpinc/tcli/examples/_pubsub/cmd" // registers sqs/sns
+      "github.com/hpinc/tcli/pkg/env"
+  )
+  ```
 
 ### Test it out
 

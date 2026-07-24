@@ -8,12 +8,12 @@ type EchoCommand struct {
 }
 
 func init() {
-	cmds["echo"] = &EchoCommand{}
+	RegisterCommand("echo", &EchoCommand{})
 }
 
 func (c *EchoCommand) Init(p *ParseResult) Command {
 	k := EchoCommand{}
-	k.baseInit(p, k.doEcho)
+	k.InitBase(p, k.doEcho)
 	return &k
 }
 

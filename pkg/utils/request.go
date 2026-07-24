@@ -8,7 +8,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/hpinc/tcli/internal/config"
+	"github.com/hpinc/tcli/pkg/config"
 )
 
 const (

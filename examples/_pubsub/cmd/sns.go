@@ -1,45 +1,45 @@
 // Copyright 2025 HP Development Company, L.P.
 // SPDX-License-Identifier: MIT
 
-package cmd
+package pubsub
 
 import (
-	"log"
+	"fmt"
 
-	"github.com/hpinc/tcli/internal/common"
+	pubsubcommon "github.com/hpinc/tcli/examples/_pubsub/common"
+	"github.com/hpinc/tcli/pkg/cmd"
 )
 
 func init() {
-	cmds["sns"] = &SnsCommand{}
+	cmd.RegisterCommand("sns", &SnsCommand{})
 }
 
 type SnsCommand struct {
-	CmdBase
+	cmd.CmdBase
 	Name     string
 	Data     string
 	Arn      string
 	Endpoint string
 }
 
-func (c *SnsCommand) Init(p *ParseResult) Command {
+func (c *SnsCommand) Init(p *cmd.ParseResult) cmd.Command {
 	k := SnsCommand{}
 	k.Endpoint = *p.Values["endpoint"]
 	k.Data = *p.Values["data"]
 	k.Arn = *p.Values["arn"]
 	k.Name = *p.Values["name"]
-	k.baseInit(p, k.send)
+	k.InitBase(p, k.send)
 	return &k
 }
 
 // Function to publish the event to SNS
 func (c *SnsCommand) send() error {
-	cli, err := common.NewSNSClient(c.Endpoint)
+	cli, err := pubsubcommon.NewSNSClient(c.Endpoint)
 	if err != nil {
-		log.Fatalf("Publish to sns failed: %v\n", err)
+		return fmt.Errorf("publish to sns failed: %w", err)
 	}
-	err = cli.Publish(c.Arn, c.Data, c.Name)
-	if err != nil {
-		log.Fatalf("Publish to sns failed: %v\n", err)
+	if err := cli.Publish(c.Arn, c.Data, c.Name); err != nil {
+		return fmt.Errorf("publish to sns failed: %w", err)
 	}
 	return nil
 }

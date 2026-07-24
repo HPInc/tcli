@@ -10,7 +10,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/hpinc/tcli/internal/utils"
+	"github.com/hpinc/tcli/pkg/common"
+	"github.com/hpinc/tcli/pkg/utils"
 )
 
 const IgnoreError = -1
@@ -20,12 +21,12 @@ type HttpCommand struct {
 }
 
 func init() {
-	cmds["http"] = &HttpCommand{}
+	RegisterCommand("http", &HttpCommand{})
 }
 
 func (c *HttpCommand) Init(p *ParseResult) Command {
 	k := HttpCommand{}
-	k.baseInit(p, k.http)
+	k.InitBase(p, k.http)
 	return &k
 }
 
@@ -44,7 +45,8 @@ func (c *HttpCommand) http() error {
 		url,
 		getData(result.body))
 	if err != nil {
-		log.Fatalf("Request error: %v\n", err)
+		log.Errorf("Request error: %v\n", err)
+		return err
 	}
 	req.Header = result.headers
 	if len(*result.urlValues) > 0 {
@@ -62,7 +64,8 @@ func (c *HttpCommand) http() error {
 	client := utils.RetriableClient(int64(p.Global.RetryCount))
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatalf("Response error: %v\n", err)
+		log.Errorf("Response error: %v\n", err)
+		return err
 	}
 	// there might be useful results even when there is an error
 	// so show the result first
@@ -80,7 +83,7 @@ func (c *HttpCommand) http() error {
 		log.Errorf("StatusCode: %d, Expected: %d",
 			resp.StatusCode, code)
 		if !p.Global.IgnoreError {
-			log.Fatalf("Exit on first error")
+			return common.ErrUnexpectedStatus
 		}
 	}
 	return nil

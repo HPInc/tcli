@@ -9,7 +9,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/hpinc/tcli/internal/common"
+	"github.com/hpinc/tcli/pkg/common"
 
 	"github.com/itchyny/gojq"
 )
