@@ -14,22 +14,32 @@ Now that tcli's reusable packages live under `pkg/` (instead of `internal/`),
 To add pubsub as a module, do the following
 - add the module definition from modules.yaml to your tools/modules.yaml
 - copy `pubsub.json` to `tools/data`
-- blank-import the `pubsub` package from your own `main` (or from
-  `cmd/main.go` if you're building tcli directly) so its `init()`
-  registers the `sqs`/`sns` command classes:
+- blank-import the `pubsub` package as shown below
 
   ```go
+  package main
+
   import (
-      _ "github.com/hpinc/tcli/examples/_pubsub/cmd" // registers sqs/sns
-      "github.com/hpinc/tcli/pkg/env"
+	  "os"
+
+	  // Blank-import registers the "file" command class with tcli's command
+	  // registry via its init().
+	  _ "github.com/hpinc/tcli/examples/_pubsub/cmd" // registers sqs/sns
+	  "github.com/hpinc/tcli/pkg/env"
   )
+
+  func main() {
+	  if err := env.Run(); err != nil {
+		  os.Exit(1)
+	  }
+  }
   ```
 
 ### Test it out
 
 List supported commands
 ```console
-$ TCLI_CONFIG_ROOT=tools go run cmd/main.go pubsub
+$ TCLI_CONFIG_ROOT=tools go run main.go pubsub
 Please specify a command. Supported commands are:
 - send_sns      send sns message
 
@@ -38,7 +48,7 @@ Please specify a command. Supported commands are:
 
 Get help on commands
 ```console
-$ TCLI_CONFIG_ROOT=tools go run cmd/main.go pubsub send_sns -help
+$ TCLI_CONFIG_ROOT=tools go run main.go pubsub send_sns -help
 Usage of send_sns:
   -arn string
         arn (default "arn:aws:sns:us-east-1:000000000000:dev")
