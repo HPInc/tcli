@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/hpinc/tcli/internal/common"
+	"github.com/hpinc/tcli/pkg/common"
 )
 
 const definitionsPrefix = "#/definitions/"

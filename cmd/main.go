@@ -6,7 +6,7 @@ package main
 import (
 	"os"
 
-	"github.com/hpinc/tcli/internal/env"
+	"github.com/hpinc/tcli/pkg/env"
 )
 
 // main is the entry point for the tcli application.

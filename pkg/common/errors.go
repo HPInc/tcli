@@ -12,4 +12,5 @@ var (
 	ErrNoSuchModule         = errors.New("Module not found")
 	ErrNoSuchCommand        = errors.New("Command not found")
 	ErrNoSuchSubCommand     = errors.New("Subcommand not found")
+	ErrUnexpectedStatus     = errors.New("Unexpected status code")
 )

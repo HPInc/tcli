@@ -4,9 +4,9 @@
 package cmd
 
 import (
-	"github.com/hpinc/tcli/internal/common"
-	"github.com/hpinc/tcli/internal/config"
-	"github.com/hpinc/tcli/internal/parser"
+	"github.com/hpinc/tcli/pkg/common"
+	"github.com/hpinc/tcli/pkg/config"
+	"github.com/hpinc/tcli/pkg/parser"
 )
 
 type Environment struct {

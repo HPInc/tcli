@@ -3,7 +3,7 @@
 
 package config
 
-import "github.com/hpinc/tcli/internal/parser"
+import "github.com/hpinc/tcli/pkg/parser"
 
 // proxy config
 type Proxy struct {

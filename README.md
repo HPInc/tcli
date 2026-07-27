@@ -62,6 +62,42 @@ If you are still interested, please go through [docs](/docs/build_and_run.md) to
 combine `tcli` for meaningful tests.
 To find even more sophisticated uses of `tcli`, see [stress test with tcli](/docs/stress_test.md)
 
+### Using tcli as a library
+
+`tcli`'s reusable packages (spec parsing, config/module loading, and command
+execution) live under `pkg/` and can be imported directly by other Go
+modules — no need to copy source files into your own repository:
+
+```go
+import (
+	"github.com/hpinc/tcli/pkg/cmd"
+	"github.com/hpinc/tcli/pkg/config"
+	"github.com/hpinc/tcli/pkg/env"
+	"github.com/hpinc/tcli/pkg/parser"
+)
+```
+
+Custom extension commands (like the `sqs`/`sns` example under
+[`examples/_pubsub`](/examples/_pubsub)) no longer need to be copied into
+`internal/cmd`. Instead, implement `cmd.Command` in your own package and
+register it with `cmd.RegisterCommand` from an `init()`, then blank-import
+that package from your `main`:
+
+```go
+package mypubsub
+
+func init() {
+    cmd.RegisterCommand("sqs", &SqsCommand{})
+}
+```
+
+```go
+// in your main package
+import _ "example.com/myclient/mypubsub"
+```
+
+See [`examples/_pubsub`](/examples/_pubsub) for a full working example.
+
 #### Areas we need help with
 
 - testing

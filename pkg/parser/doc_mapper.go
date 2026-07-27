@@ -4,7 +4,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/hpinc/tcli/internal/common"
+	"github.com/hpinc/tcli/pkg/common"
 	"github.com/pb33f/libopenapi"
 	"github.com/pb33f/libopenapi/datamodel/high/base"
 	v2 "github.com/pb33f/libopenapi/datamodel/high/v2"

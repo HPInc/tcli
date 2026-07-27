@@ -7,7 +7,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/hpinc/tcli/internal/common"
+	"github.com/hpinc/tcli/pkg/common"
 
 	"gopkg.in/yaml.v2"
 )
