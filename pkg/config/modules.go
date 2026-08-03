@@ -11,7 +11,7 @@ import (
 	"github.com/hpinc/tcli/pkg/common"
 	"github.com/hpinc/tcli/pkg/parser"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 var currModule *Module

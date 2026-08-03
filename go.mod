@@ -5,7 +5,6 @@ go 1.26.5
 require (
 	github.com/itchyny/gojq v0.12.19
 	github.com/pb33f/libopenapi v0.34.2
-	gopkg.in/yaml.v2 v2.4.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
