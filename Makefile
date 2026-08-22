@@ -39,7 +39,7 @@ lint:
 	./tools/run_linter.sh
 
 test:
-	go test ./...
+	TCLI_INTEGRATION=1 go test ./...
 
 docker:
 	docker build -t $(IMAGE) -f tools/Dockerfile .
