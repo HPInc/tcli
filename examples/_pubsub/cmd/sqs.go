@@ -1,4 +1,4 @@
-// Copyright 2025 HP Development Company, L.P.
+// Copyright (c) 2025-2026 HP Development Company, L.P.
 // SPDX-License-Identifier: MIT
 
 // Package pubsub demonstrates adding a custom extension command to tcli
