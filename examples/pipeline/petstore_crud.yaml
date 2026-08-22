@@ -1,0 +1,43 @@
+name: petstore-crud
+description: |
+  1:1 equivalent of examples/example.sh, expressed as a tcli pipeline.
+  Seed N pets, create them, read them back, delete them, and verify
+  that a follow-up read returns 404.
+
+variables:
+  petCount: 1
+  status_notfound: 404
+
+defaults:
+  verbose: false
+  retryCount: 2
+
+steps:
+  # utils echo emits N seed records on stdout, wrapped in {body: }
+  # so the next step (addPet) picks up its "body" parameter directly.
+- name: seed
+  command: utils echo
+  format: 'range(1;${{ variables.petCount }}+1) | {body: {id:., name:.|tostring, photourls:[.|tostring]}}'
+
+- name: create
+  command: petstore pet addPet
+  inputFrom: seed
+  format: '{petId:.id}'
+
+- name: read
+  command: petstore pet getPetById
+  inputFrom: create
+  format: '{petId:.id, api_key:.id}'
+
+- name: delete
+  command: petstore pet deletePet
+  inputFrom: read
+  format: '{petId:.message}'
+
+  # A follow-up read must 404 for every deleted id; step fails otherwise.
+- name: verify_gone
+  command: petstore pet getPetById
+  inputFrom: delete
+  params:
+    doc: shell
+  statusCode: ${{ variables.status_notfound }}

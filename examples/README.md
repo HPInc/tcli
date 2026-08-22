@@ -14,6 +14,7 @@ See [extending support for custom commands](/examples/_pubsub/README.md)
 
 ### References
 - [README.md](/README.md)
+- [Pipeline example explanation](/docs/pipelines.md)
 - [how to build and run](/docs/build_and_run.md)
 - Format
   - [jq lang](https://github.com/jqlang/jq/wiki/jq-Language-Description)

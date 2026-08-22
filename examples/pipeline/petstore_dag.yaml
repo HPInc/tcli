@@ -1,0 +1,54 @@
+name: petstore-dag
+description: |
+  Demonstrates flows a bash pipeline cannot express:
+    - fan-out: one create feeds two independent verifications
+    - scalar reference: a single field from a response is injected as a
+      param on a later step via ${{ steps.<name>.outputs.<var> }}
+    - conditional teardown: delete only runs if the create step succeeded
+
+variables:
+  petId: 4242
+  status_ok: 200
+  status_notfound: 404
+
+steps:
+- name: create_one
+  command: petstore pet addPet
+  body:
+    id: ${{ variables.petId }}
+    name: fido
+    photoUrls: [http://img.example/fido.png]
+  outputs:
+    newId: .id              # capture the created id off the response
+    newName: .name
+
+  # -------- fan-out: two branches read from create_one in parallel --------
+
+- name: read_by_id
+  command: petstore pet getPetById
+  params:
+    petId: ${{ steps.create_one.outputs.newId }}
+  statusCode: ${{ variables.status_ok }}
+
+- name: search_by_status
+  command: petstore pet findPetsByStatus
+  params:
+    status: available
+  dependsOn: [create_one]    # explicit; no data reference
+
+  # -------- fan-in: teardown depends on both branches finishing --------
+
+- name: delete_one
+  command: petstore pet deletePet
+  params:
+    petId: ${{ steps.create_one.outputs.newId }}
+  dependsOn: [read_by_id, search_by_status]
+  condition: ${{ steps.create_one.ok }}     # skip teardown if create failed
+  continueOnError: true                     # never block the pipeline on cleanup
+
+- name: verify_gone
+  command: petstore pet getPetById
+  params:
+    petId: ${{ steps.create_one.outputs.newId }}
+  dependsOn: [delete_one]
+  statusCode: ${{ variables.status_notfound }}

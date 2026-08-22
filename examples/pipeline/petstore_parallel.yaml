@@ -1,0 +1,62 @@
+name: petstore-parallel
+description: |
+  Exercises both parallelism axes:
+    - inter-step: two verification branches run at the same time (DAG fan-out)
+    - intra-step: create/verify/teardown each process 100 records concurrently
+  Also shows the "fan out over a parameter grid" pattern via stdin+jq,
+  which replaces the need for a dedicated matrix: field.
+
+concurrency:
+  maxParallel: 8       # cap simultaneous DAG branches
+  onFailure: cancel    # abort in-flight siblings when any step fails
+
+variables:
+  petCount: 100
+  status_ok: 200
+  status_notfound: 404
+
+defaults:
+  retryCount: 5
+
+steps:
+- name: seed
+  command: utils echo
+  format: 'range(1;${{ variables.petCount }}+1) | {body: {id:., name:.|tostring, photourls:[.|tostring]}}'
+
+  # Intra-step parallelism: 100 addPet calls fan out across 16 workers.
+  # Streams from `seed` because the consumer is concurrent.
+- name: create
+  command: petstore pet addPet
+  inputFrom: seed
+  parallelism: 16
+  format: '{petId:.id}'
+
+  # ---- inter-step fan-out: these two branches run concurrently ----
+
+- name: verify_read
+  command: petstore pet getPetById
+  inputFrom: create          # runner buffers `create`'s output (two consumers)
+  parallelism: 8
+  statusCode: ${{ variables.status_ok }}
+
+- name: verify_search
+  command: petstore pet findPetsByStatus
+  params:
+    status: available
+  dependsOn: [create]        # non-data dependency; runs alongside verify_read
+
+  # ---- fan-in: teardown waits for both branches ----
+
+- name: teardown
+  command: petstore pet deletePet
+  inputFrom: create
+  parallelism: 8
+  dependsOn: [verify_read, verify_search]
+  format: '{petId:.message}'
+  continueOnError: true
+
+- name: verify_gone
+  command: petstore pet getPetById
+  inputFrom: teardown
+  parallelism: 8
+  statusCode: ${{ variables.status_notfound }}
