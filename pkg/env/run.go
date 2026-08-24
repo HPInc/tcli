@@ -20,6 +20,7 @@ const (
 	cmdModules  = 1
 	cmdCommands = 2
 	cmdCommand  = 3
+	cmdPipeline = 4
 
 	//
 	posModule     = 1
@@ -59,6 +60,8 @@ func Run() error {
 		err = config.ShowCommands(state.module)
 	case cmdCommand:
 		err = call(config.ShowCommand(state.module, state.cmd, state.subCmd))
+	case cmdPipeline:
+		err = runPipeline(state.args)
 	}
 	return handleError(err)
 }
@@ -95,6 +98,9 @@ func call(m *parser.Method, err error) error {
 func getCmdState() cmdState {
 	if argc < 2 {
 		return cmdState{state: cmdModules}
+	}
+	if argc >= 2 && os.Args[posModule] == "pipeline" {
+		return cmdState{state: cmdPipeline, args: os.Args[2:]}
 	} else if argc < 3 {
 		return cmdState{state: cmdCommands, module: os.Args[posModule]}
 	} else {
