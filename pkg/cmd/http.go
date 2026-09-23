@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/hpinc/tcli/pkg/common"
@@ -113,8 +114,12 @@ func getData(body string) io.Reader {
 
 func applyFormat(bytes []byte, p *ParseResult) {
 	if p.Global.Format != "" {
-		utils.DoFormat(bytes, p.Values, p.Global.Format)
+		utils.DoFormat(bytes, p.Values, p.Global.Format, p.Global.Trace)
 	} else {
-		fmt.Println(string(bytes))
+		str := string(bytes)
+		fmt.Println(str)
+		if p.Global.Trace {
+			fmt.Fprintln(os.Stderr, str)
+		}
 	}
 }
