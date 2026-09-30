@@ -8,7 +8,7 @@ go build -o bin/tcli \
 -ldflags "-s -w" cmd/main.go
 
 # use a minimal alpine image
-FROM alpine:3.24.1
+FROM alpine:3.24.2
 
 # make tcli available in path
 COPY --from=builder /go/src/tcli/bin/tcli /usr/local/bin/tcli

@@ -7,6 +7,11 @@ ifndef OS
   BIN=bin/tcli
 endif
 
+ifeq ($(OS),Windows_NT)
+	OS=windows
+	BIN=bin/tcli.exe
+endif
+
 ifndef ARCH
   ARCH=amd64
 endif

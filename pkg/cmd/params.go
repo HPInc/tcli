@@ -30,6 +30,7 @@ type GlobalResult struct {
 	Verbose     bool
 	Parallel    bool
 	IgnoreError bool
+	Trace       bool
 }
 
 type ParseResult struct {
@@ -90,6 +91,10 @@ func getParamVal(p *parser.Parameter, i *common.Input) string {
 // getGlobal initializes the global flags and returns a GlobalResult.
 func getGlobal(fs *flag.FlagSet, r *parser.Root) *GlobalResult {
 	g := GlobalResult{}
+	traceDefault := false
+	if settings := config.GetSettings(); settings != nil {
+		traceDefault = settings.Trace
+	}
 	fs.StringVar(&g.BasePath, "base_path", getBasePath(r), "http base path")
 	fs.StringVar(&g.Doc, "doc", "none", "Generate docs (none, shell)")
 	fs.StringVar(&g.Format, "format", "", "json format")
@@ -100,6 +105,7 @@ func getGlobal(fs *flag.FlagSet, r *parser.Root) *GlobalResult {
 	fs.BoolVar(&g.IgnoreError, "ignore_errors", false, "Ignore errors")
 	fs.BoolVar(&g.Parallel, "parallel", false, "Do runs in parallel")
 	fs.BoolVar(&g.Verbose, "v", false, "Verbose")
+	fs.BoolVar(&g.Trace, "trace", traceDefault, "Trace intermediate output to stderr")
 	return &g
 }
 

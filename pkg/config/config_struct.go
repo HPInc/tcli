@@ -35,6 +35,7 @@ type Config struct {
 	ProfileName    string    `yaml:"default_profile"`
 	Profiles       []Profile `yaml:"profiles"`
 	ModuleConfig   string    `yaml:"module_config"`
+	Trace          bool      `yaml:"trace"`
 	CurrentProfile *Profile
 	Modules        []Module
 	TokenCache     *TokenCache

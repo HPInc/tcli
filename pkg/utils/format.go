@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/hpinc/tcli/pkg/common"
@@ -18,7 +19,7 @@ const (
 	varParams = "$params"
 )
 
-func DoFormat(bytes []byte, v common.Values, f string) {
+func DoFormat(bytes []byte, v common.Values, f string, trace bool) {
 	var i gojq.Iter
 	// check if variables processing needed
 	if strings.Contains(f, varParams) {
@@ -26,7 +27,7 @@ func DoFormat(bytes []byte, v common.Values, f string) {
 	} else {
 		i = getIter(bytes, f)
 	}
-	printFormat(i)
+	printFormat(i, trace)
 }
 
 // run gojq without variables, return iterator
@@ -64,7 +65,7 @@ func getIterWithVariables(bytes []byte, v common.Values, f string) gojq.Iter {
 	return code.Run(out, mapJsonParams(v))
 }
 
-func printFormat(iter gojq.Iter) {
+func printFormat(iter gojq.Iter, trace bool) {
 	for {
 		v, ok := iter.Next()
 		if !ok {
@@ -76,7 +77,11 @@ func printFormat(iter gojq.Iter) {
 			}
 			log.Fatalln(err)
 		}
-		fmt.Printf("%s", common.GetJsonString(v))
+		str := common.GetJsonString(v)
+		fmt.Printf("%s", str)
+		if trace {
+			fmt.Fprintf(os.Stderr, "%s", str)
+		}
 	}
 }
 
