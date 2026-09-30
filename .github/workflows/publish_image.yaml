@@ -32,3 +32,7 @@ jobs:
       run: |
         docker tag tcli "$IMAGE:${GITHUB_REF_NAME}"
         docker push "$IMAGE:${GITHUB_REF_NAME}"
+
+    - name: Cleanup
+      if: always()
+      run: make ci_clean
