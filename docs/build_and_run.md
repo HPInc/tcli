@@ -55,6 +55,26 @@ The following changes are made to your system:
 
 To add your own Swagger/OpenAPI service as a new command module, see [How to add a module](/docs/modules.md).
 
+### tcli application version
+`tcli` reports its release version via `tcli version`. The version is derived from the
+annotated Git release tag (`vMAJOR.MINOR.PATCH`) that was checked out at build time, and
+is embedded into the binary at build time (`make build`, `make docker`, and the GHCR
+publish workflow all do this automatically). Untagged/local builds report a Git
+description (e.g. `v1.2.3-4-gabcdef-dirty`) or `dev` when no tags are reachable.
+
+```console
+$ bin/tcli version
+v1.2.3
+```
+
+To cut a release, tag the commit and push the tag:
+```console
+git tag -a v1.2.3 -m "tcli v1.2.3"
+git push origin v1.2.3
+```
+Pushing a `vX.Y.Z` tag triggers the `publish docker image` GitHub Actions workflow,
+which builds and publishes `ghcr.io/hpinc/tcli:vX.Y.Z` (see below).
+
 ### How to build and run from docker
 The following is only tested in linux but should work similarly for windows.
 This method will depend on docker and a couple of base images available. The advantage
@@ -65,28 +85,50 @@ complete isolation with minimal changes to your work machine.
 make docker
 ```
 
-This will make a docker image in your local machine. Listing the image should show local.
+This builds a local image tagged with the current Git description (defaults to
+`ghcr.io/hpinc/tcli:<version>`, override with `make docker VERSION=v1.2.3` or
+`make docker IMAGE=tcli VERSION=v1.2.3` for a different local image name).
+Listing the image should show its versioned tag.
 ```console
-docker images tcli
-REPOSITORY       TAG       IMAGE ID       CREATED       SIZE
-tcli   latest    c3993db64f87   2 hours ago   30.5MB
+docker images ghcr.io/hpinc/tcli
+REPOSITORY             TAG       IMAGE ID       CREATED       SIZE
+ghcr.io/hpinc/tcli      v1.2.3    c3993db64f87   2 hours ago   30.5MB
 ```
 
 At this point, you can work in two modes.
 - Work in single command mode
 ```console
-docker run --rm tcli petstore pet getPetById -petId 1
+docker run --rm ghcr.io/hpinc/tcli:v1.2.3 petstore pet getPetById -petId 1
 
 {"id":1,"category":{"id":1,"name":"string"},"name":"doggie","photoUrls":["string"],"tags":[{"id":1,"name":"string"}],"status":"available"}
 ```
 
 - Work from a shell in docker.
 ```console
-$ docker run --rm -it --entrypoint "" tcli /bin/bash
+$ docker run --rm -it --entrypoint "" ghcr.io/hpinc/tcli:v1.2.3 /bin/bash
 ff3b6aeb4d79:/$ tcli petstore pet getPetById -petId 1
 {"id":1,"category":{"id":1,"name":"string"},"name":"doggie","photoUrls":["string"],"tags":[{"id":1,"name":"string"}],"status":"available"}
 ff3b6aeb4d79:/$ exit                                                                                                                                                                        exit
 ```
+
+### Publishing to GitHub Container Registry (GHCR)
+Since `tcli` is public and open source, release and `main` images are published to
+[GHCR](https://ghcr.io) via `.github/workflows/publish-image.yml`:
+- Pushing a `vX.Y.Z` tag publishes `ghcr.io/hpinc/tcli:vX.Y.Z` (and corresponding
+  semver `major.minor`/`major` tags).
+- Pushing to `main` publishes/updates a floating `ghcr.io/hpinc/tcli:edge` image.
+- The image version embedded in the binary always matches the Docker image tag used
+  to build it, so `docker run --rm ghcr.io/hpinc/tcli:vX.Y.Z version` prints `vX.Y.Z`.
+
+Pulling a published image:
+```console
+docker pull ghcr.io/hpinc/tcli:v1.2.3
+docker run --rm ghcr.io/hpinc/tcli:v1.2.3 petstore pet getPetById -petId 1
+```
+
+Go/Alpine base image versions pinned in `tools/Dockerfile` are maintained
+independently of the tcli application version; update them deliberately and run
+`make sanity` (lint, test, Trivy scan) after any base-image bump.
 
 ### Override default configuration
 You can override some of the default configurations.

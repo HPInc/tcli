@@ -6,6 +6,7 @@ package env
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -44,10 +45,19 @@ var (
 	modules []module
 	argc    = len(os.Args)
 	state   = getCmdState()
+
+	// version is the tcli application release version. It is set at build
+	// time via -ldflags "-X github.com/hpinc/tcli/pkg/env.version=vX.Y.Z"
+	// from the Git release tag. Defaults to "dev" for untagged/local builds.
+	version = "dev"
 )
 
 // Run is the main entry point for executing commands based on command line arguments
 func Run() error {
+	if handled, err := printVersion(os.Args, os.Stdout); handled {
+		return err
+	}
+
 	var err error
 	if !config.Load() {
 		return errors.New("config load failed")
@@ -64,6 +74,17 @@ func Run() error {
 		err = runPipeline(state.args)
 	}
 	return handleError(err)
+}
+
+// printVersion reports the tcli application release version when invoked as
+// `tcli version`. It runs before config/module loading so it works without
+// project or user configuration being present.
+func printVersion(args []string, output io.Writer) (bool, error) {
+	if len(args) < 2 || args[1] != "version" {
+		return false, nil
+	}
+	_, err := fmt.Fprintln(output, version)
+	return true, err
 }
 
 // call executes the given method with the provided error handling
