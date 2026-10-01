@@ -67,7 +67,8 @@ $ bin/tcli version
 v1.2.3
 ```
 
-To cut a release, tag the commit and push the tag:
+To cut a release, first merge the release commit into `main` and ensure its checks
+pass. Tag that commit with a new annotated tag and push the tag:
 ```console
 git tag -a v1.2.3 -m "tcli v1.2.3"
 git push origin v1.2.3
@@ -115,10 +116,42 @@ ff3b6aeb4d79:/$ exit                                                            
 Since `tcli` is public and open source, release and `main` images are published to
 [GHCR](https://ghcr.io) via `.github/workflows/publish-image.yml`:
 - Pushing a `vX.Y.Z` tag publishes `ghcr.io/hpinc/tcli:vX.Y.Z` (and corresponding
-  semver `major.minor`/`major` tags).
+  `vX.Y` and `latest` aliases). Releases with a nonzero major version also update
+  `vX`; there is no `v0` alias while the application is pre-1.0.
+- SemVer prereleases such as `v1.2.3-rc.1` publish only their exact version tag;
+  they never update stable aliases. Build metadata (`+...`) is not supported in
+  release tags because `+` cannot appear in Docker tags.
 - Pushing to `main` publishes/updates a floating `ghcr.io/hpinc/tcli:edge` image.
-- The image version embedded in the binary always matches the Docker image tag used
-  to build it, so `docker run --rm ghcr.io/hpinc/tcli:vX.Y.Z version` prints `vX.Y.Z`.
+- The binary and OCI version label match the exact release tag. Floating aliases
+  resolve to that same binary; `edge` reports its Git description, not `edge`.
+- Before any push, the workflow validates the release tag and its membership in
+  `main`, runs tests/lint, builds the candidate image, checks its version without
+  configuration, and scans that same image with Trivy. A failure prevents publishing.
+
+#### Registry and release administration
+
+Before the first release, repository/organization administrators must:
+
+- Allow the repository's `GITHUB_TOKEN` to publish GHCR packages. For an existing
+  package, connect it to this repository and grant the workflow Actions access.
+- Create a repository tag ruleset targeting `v*` that restricts tag creation to
+  release maintainers and prevents tag updates/deletions. Never move an existing
+  release tag; publish a new version instead. Protect `main` with required checks.
+- After the first successful publication, set the GHCR package visibility to
+  **Public**. A public GitHub repository does not make its container package public;
+  GHCR packages default to private.
+
+Visibility and repository rulesets require administrator configuration; the workflow
+does not change them. Verify public access by pulling the published exact version
+from a clean Docker configuration without registry credentials:
+
+```console
+mkdir -p /tmp/tcli-anonymous-docker
+docker --config /tmp/tcli-anonymous-docker pull ghcr.io/hpinc/tcli:v1.2.3
+```
+
+Use a fresh, empty configuration directory for this check. Until this succeeds,
+do not announce the image as publicly available.
 
 Pulling a published image:
 ```console
