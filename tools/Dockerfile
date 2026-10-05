@@ -1,14 +1,18 @@
 FROM golang:1.27.0-alpine3.24 AS builder
+ARG TCLI_VERSION=dev
 ADD . /go/src/tcli
 WORKDIR /go/src/tcli
 
 # build the source
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
 go build -o bin/tcli \
--ldflags "-s -w" cmd/main.go
+-ldflags "-s -w -X github.com/hpinc/tcli/pkg/env.version=${TCLI_VERSION}" cmd/main.go
 
 # use a minimal alpine image
 FROM alpine:3.24.2
+ARG TCLI_VERSION=dev
+LABEL org.opencontainers.image.version="${TCLI_VERSION}" \
+      org.opencontainers.image.source="https://github.com/hpinc/tcli"
 
 # make tcli available in path
 COPY --from=builder /go/src/tcli/bin/tcli /usr/local/bin/tcli

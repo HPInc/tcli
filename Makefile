@@ -1,4 +1,6 @@
-IMAGE:=tcli
+IMAGE?=ghcr.io/hpinc/tcli
+VERSION?=$(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
+TCLI_LDFLAGS=-s -w -X github.com/hpinc/tcli/pkg/env.version=$(VERSION)
 TRIVY_IMAGE:=ghcr.io/aquasecurity/trivy
 BIN=bin/tcli.exe
 
@@ -24,7 +26,7 @@ all:
 build:
 	CGO_ENABLED=0 GOOS=$(OS) GOARCH=$(ARCH) \
 	go build -o $(BIN) \
-	-ldflags "-s -w" cmd/main.go
+	-ldflags "$(TCLI_LDFLAGS)" cmd/main.go
 
 vendor:
 	go mod vendor
@@ -47,17 +49,18 @@ test:
 	TCLI_INTEGRATION=1 go test ./...
 
 docker:
-	docker build -t $(IMAGE) -f tools/Dockerfile .
+	docker build --build-arg TCLI_VERSION=$(VERSION) \
+	-t $(IMAGE):$(VERSION) -f tools/Dockerfile .
 
 docker_run:
-	docker run --rm $(IMAGE)
+	docker run --rm $(IMAGE):$(VERSION)
 
 trivy: docker
 	docker run --rm \
 	-v/var/run/docker.sock:/var/run/docker.sock \
 	-v"$$HOME/Library/Caches:/root/.cache" \
 	$(TRIVY_IMAGE) \
-	image -q --severity HIGH,CRITICAL,MEDIUM,LOW --exit-code 1 $(IMAGE)
+	image -q --severity HIGH,CRITICAL,MEDIUM,LOW --exit-code 1 $(IMAGE):$(VERSION)
 
 clean:
 	go clean
@@ -68,5 +71,5 @@ ci_clean: clean
 install: build
 	./tools/install.sh
 
-.PHONY: all build vet imports tidy sanity lint gosec docker trivy clean install
+.PHONY: all build vet imports tidy sanity lint gosec docker docker_run trivy clean install
 .SILENT:
