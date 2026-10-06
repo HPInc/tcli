@@ -1,0 +1,85 @@
+name: tcli release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tcli-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      prerelease: ${{ steps.version.outputs.prerelease }}
+      commit: ${{ steps.version.outputs.commit }}
+    steps:
+      - name: Check out release with history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate application release
+        id: version
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: bash tools/resolve_release_version.sh "$RELEASE_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Run tests and lint
+        run: make test lint
+
+      - name: Verify application version without configuration
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          make build
+          actual=$(TCLI_CONFIG_ROOT=/missing-config bin/tcli version)
+          if [[ "$actual" != "$VERSION" ]]; then
+            echo "Version mismatch: expected $VERSION, got $actual" >&2
+            exit 1
+          fi
+
+  release:
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Create GitHub Release
+        uses: actions/github-script@v7
+        env:
+          RELEASE_TAG: ${{ needs.validate.outputs.version }}
+          RELEASE_PRERELEASE: ${{ needs.validate.outputs.prerelease }}
+          RELEASE_COMMIT: ${{ needs.validate.outputs.commit }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const tag = process.env.RELEASE_TAG;
+            try {
+              const { data } = await github.rest.repos.getReleaseByTag({ owner, repo, tag });
+              core.notice(`Release ${tag} already exists at ${data.html_url}; leaving it unchanged.`);
+              return;
+            } catch (error) {
+              if (error.status !== 404) throw error;
+            }
+            await github.rest.repos.createRelease({
+              owner,
+              repo,
+              tag_name: tag,
+              target_commitish: process.env.RELEASE_COMMIT,
+              name: `tcli ${tag}`,
+              prerelease: process.env.RELEASE_PRERELEASE === 'true',
+              generate_release_notes: true,
+              make_latest: 'legacy'
+            });

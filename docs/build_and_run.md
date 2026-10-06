@@ -55,6 +55,42 @@ The following changes are made to your system:
 
 To add your own Swagger/OpenAPI service as a new command module, see [How to add a module](/docs/modules.md).
 
+### tcli application version
+`tcli version` prints the application version without loading configuration or
+modules. `make build` and `make docker` embed `VERSION`, which defaults to
+`git describe --tags --always --dirty`: an exact tag on a tagged commit, a Git
+description or commit ID for development builds, or `dev` without Git metadata.
+Historical lightweight tags remain usable for build versioning.
+Plain `go run cmd/main.go version` and builds without version injection report `dev`.
+
+```console
+make build VERSION=v1.2.3
+TCLI_CONFIG_ROOT=/missing-config bin/tcli version
+v1.2.3
+```
+
+#### Application releases
+After merging into `main` and passing its checks, create and push a new annotated
+SemVer tag:
+
+```console
+git tag -a v1.2.3 -m "tcli v1.2.3"
+git push origin v1.2.3
+```
+
+The `tcli release` workflow validates the tag, requires its commit to belong to
+`main`, runs tests and lint, and checks the built application's exact version.
+It then creates a GitHub Release with generated notes and GitHub's source
+archives, without uploading compiled binaries. SemVer prereleases such as
+`v1.2.3-rc.1` are marked as prereleases; optional build metadata is supported.
+An existing release is left unchanged on reruns.
+
+New automated releases require annotated tags; historical tags are not modified.
+Protect `main` with required checks and restrict creation/update/deletion of
+`v*` tags to release maintainers. Never move a release tag; use a new version.
+The release job requires permission for its `GITHUB_TOKEN` to create releases.
+Neither tag pushes nor main pushes publish container images.
+
 ### How to build and run from docker
 The following is only tested in linux but should work similarly for windows.
 This method will depend on docker and a couple of base images available. The advantage
@@ -65,7 +101,31 @@ complete isolation with minimal changes to your work machine.
 make docker
 ```
 
-This will make a docker image in your local machine. Listing the image should show local.
+This builds the local image `tcli:latest`. The image reference is independent of
+the embedded application version: `make docker VERSION=v1.2.3` still builds
+`tcli:latest`, with application version `v1.2.3`. Override the full local reference
+with `IMAGE`; build, run, and scan targets use the same reference:
+
+```console
+make docker VERSION=v1.2.3 IMAGE=tcli:local
+docker run --rm -e TCLI_CONFIG_ROOT=/missing-config tcli:local version
+make docker_run IMAGE=tcli:local
+make trivy VERSION=v1.2.3 IMAGE=tcli:local
+```
+
+The Dockerfile can also be built directly, without Git metadata, by supplying the
+application version explicitly:
+
+```console
+docker build --build-arg TCLI_VERSION=v1.2.3 -f tools/Dockerfile -t tcli:local .
+```
+
+`TCLI_VERSION` defaults to `dev`. Its value is embedded in the application and
+the `org.opencontainers.image.version` label. Image naming and publication are
+not part of the application release workflow. The existing Dockerfile builds
+linux/amd64; base-image versions are independent of the application version.
+
+Listing the default image should show:
 ```console
 docker images tcli
 REPOSITORY       TAG       IMAGE ID       CREATED       SIZE
@@ -82,7 +142,7 @@ docker run --rm tcli petstore pet getPetById -petId 1
 
 - Work from a shell in docker.
 ```console
-$ docker run --rm -it --entrypoint "" tcli /bin/bash
+$ docker run --rm -it --entrypoint "" tcli /bin/sh
 ff3b6aeb4d79:/$ tcli petstore pet getPetById -petId 1
 {"id":1,"category":{"id":1,"name":"string"},"name":"doggie","photoUrls":["string"],"tags":[{"id":1,"name":"string"}],"status":"available"}
 ff3b6aeb4d79:/$ exit                                                                                                                                                                        exit
