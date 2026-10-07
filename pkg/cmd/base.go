@@ -7,12 +7,7 @@ type CmdBase struct {
 	p       *ParseResult
 	global  *GlobalResult
 	runFunc fnRun
-}
-
-func (c *CmdBase) baseInit(p *ParseResult, f fnRun) {
-	c.p = p
-	c.global = p.Global
-	c.runFunc = f
+	stop    <-chan struct{} // closed when another job has failed
 }
 
 // InitBase initializes a CmdBase from outside this package. Custom Command
@@ -25,7 +20,9 @@ func (c *CmdBase) baseInit(p *ParseResult, f fnRun) {
 //	    return &k
 //	}
 func (c *CmdBase) InitBase(p *ParseResult, f func() error) {
-	c.baseInit(p, f)
+	c.p = p
+	c.global = p.Global
+	c.runFunc = f
 }
 
 // Params returns the parsed parameter values for this command, so external
@@ -33,6 +30,13 @@ func (c *CmdBase) InitBase(p *ParseResult, f func() error) {
 // access to CmdBase's unexported fields.
 func (c *CmdBase) Params() *ParseResult {
 	return c.p
+}
+
+// Stop returns a channel that is closed once another job in the run has
+// failed. Long running commands, such as ones that retry, should give up
+// when it closes. It is nil (never closes) outside an Environment.
+func (c *CmdBase) Stop() <-chan struct{} {
+	return c.stop
 }
 
 // Global returns the parsed global flag values for this command.

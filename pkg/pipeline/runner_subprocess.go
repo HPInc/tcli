@@ -9,8 +9,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"maps"
 	"os"
 	"os/exec"
+	"slices"
 	"strconv"
 	"strings"
 )
@@ -130,27 +132,33 @@ func BuildArgs(s *Step) ([]string, error) {
 		args = append(args, "-jwt", *s.Jwt)
 	}
 	if s.Body != nil {
-		body, err := encodeBody(s.Body)
+		body, err := encodeValue(s.Body)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("step %q: body: %w", s.Name, err)
 		}
 		args = append(args, "-body", body)
 	}
-	for k, v := range s.Params {
-		args = append(args, "-"+k, fmt.Sprint(v))
+	// sorted so the command line is stable across runs
+	for _, k := range slices.Sorted(maps.Keys(s.Params)) {
+		v, err := encodeValue(s.Params[k])
+		if err != nil {
+			return nil, fmt.Errorf("step %q: param %q: %w", s.Name, k, err)
+		}
+		args = append(args, "-"+k, v)
 	}
 	return args, nil
 }
 
-// encodeBody serializes step.body: strings pass through, everything else is
-// JSON-encoded so tcli receives a well-formed body string.
-func encodeBody(v any) (string, error) {
+// encodeValue turns a step value into a flag value: strings pass through,
+// everything else is JSON-encoded so objects and lists arrive as JSON
+// rather than Go syntax.
+func encodeValue(v any) (string, error) {
 	if s, ok := v.(string); ok {
 		return s, nil
 	}
 	b, err := json.Marshal(v)
 	if err != nil {
-		return "", fmt.Errorf("body: %w", err)
+		return "", err
 	}
 	return string(b), nil
 }

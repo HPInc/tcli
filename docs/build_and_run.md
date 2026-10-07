@@ -189,6 +189,16 @@ By default, commands are run sequentially.
 Adding the `parallel` flag will run commands in parallel.
 This will use the number of available cpu cores to set the max parallel paths.
 
+#### Errors and exit status
+Execution fails fast. On first error, no further runs (from `-count` or
+from records on stdin) are started, and `tcli` exits with status `1`.
+If `-parallel` is specified, runs already in progress finish their current
+request but are not retried. All errors are printed to stderr.
+
+A response with the status set by `-status_code` (default `200`) is not an
+error. To accept any status and keep going, use `-ignore_errors`; this only
+covers status codes, so connection failures still stop the run.
+
 ### Packaging
 `make docker` will create a docker image.
 
