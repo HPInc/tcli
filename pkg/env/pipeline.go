@@ -5,6 +5,7 @@ package env
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -32,26 +33,39 @@ func runPipeline(args []string) error {
 	}
 }
 
-// runPipelineRun executes `tcli pipeline run [flags] <file.yaml>`.
+// runPipelineRun executes `tcli pipeline run [flags] <file.yaml>...`.
 func runPipelineRun(args []string) error {
 	fs := flag.NewFlagSet("pipeline run", flag.ContinueOnError)
 	verbose := fs.Bool("v", false, "verbose per-step status")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
-	if fs.NArg() < 1 {
-		return fmt.Errorf("usage: tcli pipeline run [-v] <file.yaml>")
+	if fs.NArg() == 0 {
+		return fmt.Errorf("usage: tcli pipeline run [-v] <file.yaml> [<file.yaml>...]")
 	}
-	file := fs.Arg(0)
 
-	p, err := pipeline.Load(file)
-	if err != nil {
-		return err
-	}
 	executor := pipeline.NewExecutor(&pipeline.SubprocessRunner{})
-	state, runErr := executor.Run(context.Background(), p)
-	printPipelineResults(p, state, *verbose)
-	return runErr
+	return runPipelineFiles(fs.Args(), *verbose, func(p *pipeline.Pipeline) (*pipeline.State, error) {
+		return executor.Run(context.Background(), p)
+	})
+}
+
+func runPipelineFiles(files []string, verbose bool, execute func(*pipeline.Pipeline) (*pipeline.State, error)) error {
+	var errs []error
+	for _, file := range files {
+		p, err := pipeline.Load(file)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("%s: %w", file, err))
+			continue
+		}
+
+		state, err := execute(p)
+		printPipelineResults(p, state, verbose)
+		if err != nil {
+			errs = append(errs, fmt.Errorf("pipeline %q (%s): %w", p.Name, file, err))
+		}
+	}
+	return errors.Join(errs...)
 }
 
 // runPipelineValidate parses and validates a pipeline file without running it.
@@ -72,7 +86,7 @@ func showPipelineHelp() error {
 	fmt.Println("Usage: tcli pipeline <command> [args]")
 	fmt.Println("")
 	fmt.Println("Commands:")
-	fmt.Println("  run [-v] <file.yaml>   Execute a pipeline file")
+	fmt.Println("  run [-v] <file.yaml>... Execute pipeline files in order")
 	fmt.Println("  validate <file.yaml>   Parse and validate a pipeline file")
 	fmt.Println("  help                   Show this help")
 	return nil
