@@ -2,8 +2,11 @@
 
 An alternative to shell-pipe scenario tests. A pipeline file describes named
 steps, how data flows between them, and pipeline-wide defaults/variables.
-Runnable as `tcli pipeline run <file.yaml>` and importable as a Go library
-from `pkg/pipeline`.
+Runnable as `tcli pipeline run <file.yaml> [<file.yaml>...]` and importable
+as a Go library from `pkg/pipeline`. When multiple files are provided, tcli
+runs them in argument order, reports each pipeline's step results, and
+continues to later files if an earlier pipeline fails. The command exits
+non-zero if any file fails to load or any pipeline fails.
 
 ### Why not just bash pipes?
 - Bash pipelines are linear no fan-out (reuse a step's result in two
