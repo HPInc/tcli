@@ -195,18 +195,26 @@ func (sch *scheduler) resolveStep(s *Step, r *Resolver) (*Step, error) {
 	out := *s // shallow copy; nested maps replaced below
 	mergeDefaults(&out, sch.p.Defaults)
 
-	if v, err := r.ResolveString(s.Format); err != nil {
-		return nil, err
-	} else {
-		out.Format = v
+	// resolve the merged values
+	for _, f := range []*string{&out.Format, &out.StatusCode} {
+		v, err := r.ResolveString(*f)
+		if err != nil {
+			return nil, err
+		}
+		*f = v
 	}
-	if v, err := r.ResolveString(s.StatusCode); err != nil {
-		return nil, err
-	} else {
-		out.StatusCode = v
+	for _, f := range []**string{&out.BasePath, &out.Scheme, &out.Server, &out.Jwt} {
+		if *f == nil {
+			continue
+		}
+		v, err := r.ResolveString(**f)
+		if err != nil {
+			return nil, err
+		}
+		*f = &v
 	}
 	if s.Params != nil {
-		resolved, err := r.ResolveAny(anyMap(s.Params))
+		resolved, err := r.ResolveAny(s.Params)
 		if err != nil {
 			return nil, err
 		}
@@ -221,9 +229,6 @@ func (sch *scheduler) resolveStep(s *Step, r *Resolver) (*Step, error) {
 	}
 	return &out, nil
 }
-
-// anyMap is a type helper to reuse ResolveAny on Step.Params.
-func anyMap(m map[string]any) map[string]any { return m }
 
 // mergeDefaults fills unset pointer fields on s from d. Step-level values
 // always win when explicitly set (non-nil pointer / non-zero string).

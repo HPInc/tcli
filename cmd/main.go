@@ -4,6 +4,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/hpinc/tcli/pkg/env"
@@ -12,6 +13,7 @@ import (
 // main is the entry point for the tcli application.
 func main() {
 	if err := env.Run(); err != nil {
+		fmt.Fprintln(os.Stderr, "tcli:", err)
 		os.Exit(1)
 	}
 }

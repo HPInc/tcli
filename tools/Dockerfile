@@ -10,6 +10,8 @@ go build -o bin/tcli \
 # use a minimal alpine image
 FROM alpine:3.24.2
 
+RUN apk update && apk upgrade zlib
+
 # make tcli available in path
 COPY --from=builder /go/src/tcli/bin/tcli /usr/local/bin/tcli
 COPY --from=builder /go/src/tcli/tools/config.yaml /home/tcli/.tcli/config.yaml
