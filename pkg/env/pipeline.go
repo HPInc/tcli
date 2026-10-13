@@ -55,20 +55,17 @@ func runPipelineRun(args []string) error {
 func runPipelineFiles(files []string, verbose bool, execute func(*pipeline.Pipeline) (*pipeline.State, error)) error {
 	var errs []error
 	for _, file := range files {
-		err := runPipelineFile(file, verbose, execute)
-		if err == nil {
-			continue
+		if err := runPipelineFile(file, verbose, execute); err != nil {
+			// Single-file runs keep their original error text.
+			if len(files) > 1 {
+				err = fmt.Errorf("%s: %w", file, err)
+			}
+			errs = append(errs, err)
 		}
-		// Single-file runs keep their original error text.
-		if len(files) > 1 {
-			err = fmt.Errorf("%s: %w", file, err)
-		}
-		errs = append(errs, err)
 	}
 	return errors.Join(errs...)
 }
 
-// runPipelineFile loads one pipeline, runs it, and prints its results.
 func runPipelineFile(file string, verbose bool, execute func(*pipeline.Pipeline) (*pipeline.State, error)) error {
 	p, err := pipeline.Load(file)
 	if err != nil {
