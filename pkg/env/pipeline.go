@@ -50,22 +50,33 @@ func runPipelineRun(args []string) error {
 	})
 }
 
+// runPipelineFiles runs each file in order. A failure in one file does not
+// stop the others; all failures are returned together.
 func runPipelineFiles(files []string, verbose bool, execute func(*pipeline.Pipeline) (*pipeline.State, error)) error {
 	var errs []error
 	for _, file := range files {
-		p, err := pipeline.Load(file)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("%s: %w", file, err))
+		err := runPipelineFile(file, verbose, execute)
+		if err == nil {
 			continue
 		}
-
-		state, err := execute(p)
-		printPipelineResults(p, state, verbose)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("pipeline %q (%s): %w", p.Name, file, err))
+		// Single-file runs keep their original error text.
+		if len(files) > 1 {
+			err = fmt.Errorf("%s: %w", file, err)
 		}
+		errs = append(errs, err)
 	}
 	return errors.Join(errs...)
+}
+
+// runPipelineFile loads one pipeline, runs it, and prints its results.
+func runPipelineFile(file string, verbose bool, execute func(*pipeline.Pipeline) (*pipeline.State, error)) error {
+	p, err := pipeline.Load(file)
+	if err != nil {
+		return err
+	}
+	state, err := execute(p)
+	printPipelineResults(p, state, verbose)
+	return err
 }
 
 // runPipelineValidate parses and validates a pipeline file without running it.
@@ -86,9 +97,9 @@ func showPipelineHelp() error {
 	fmt.Println("Usage: tcli pipeline <command> [args]")
 	fmt.Println("")
 	fmt.Println("Commands:")
-	fmt.Println("  run [-v] <file.yaml>... Execute pipeline files in order")
-	fmt.Println("  validate <file.yaml>   Parse and validate a pipeline file")
-	fmt.Println("  help                   Show this help")
+	fmt.Println("  run [-v] <file.yaml>...  Execute pipeline files in order")
+	fmt.Println("  validate <file.yaml>     Parse and validate a pipeline file")
+	fmt.Println("  help                     Show this help")
 	return nil
 }
 
