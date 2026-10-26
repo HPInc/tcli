@@ -37,6 +37,10 @@ type SubprocessRunner struct {
 	Stderr io.Writer
 }
 
+var secretParams = map[string]struct{}{
+	"-jwt": {},
+}
+
 // Run invokes tcli for one step, streams input records on stdin, captures
 // stdout, and parses the JSON stream back into records.
 func (r *SubprocessRunner) Run(ctx context.Context, s *Step, input []Record) ([]Record, error) {
@@ -82,9 +86,21 @@ func (r *SubprocessRunner) Run(ctx context.Context, s *Step, input []Record) ([]
 	}
 
 	if err := cmd.Run(); err != nil {
-		return nil, fmt.Errorf("tcli %s: %w", strings.Join(args, " "), err)
+		errorArgs := redactSecretArgs(args, secretParams)
+		return nil, fmt.Errorf("tcli %s: %w", strings.Join(errorArgs, " "), err)
 	}
 	return parseRecords(stdout.Bytes())
+}
+
+func redactSecretArgs(args []string, secretParams map[string]struct{}) []string {
+	redacted := slices.Clone(args)
+	for i := 0; i+1 < len(redacted); i++ {
+		if _, ok := secretParams[redacted[i]]; ok {
+			redacted[i+1] = "******"
+			i++
+		}
+	}
+	return redacted
 }
 
 // BuildArgs turns a resolved Step into the CLI argument vector tcli expects.
