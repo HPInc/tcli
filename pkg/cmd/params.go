@@ -66,12 +66,32 @@ func New(o *parser.Method, in *common.Input, r *parser.Root) *ParseResult {
 		p.Values[i.Name] = fs.String(i.Name, getParamVal(&i, in), d)
 	}
 	if o.NeedJwt(r) {
-		p.Values[JwtParam] = fs.String(JwtParam,
-			config.GetTokenCache().GetToken(), "bearer token")
+		token := config.GetTokenCache().GetToken()
+		p.Values[JwtParam] = &token
+		fs.Var(secretStringValue{value: &token}, JwtParam, "bearer token")
 	}
 	p.Values[StatusParam] = fs.String(StatusParam, "200",
 		"Status code to check")
 	return &p
+}
+
+type secretStringValue struct {
+	value *string
+}
+
+func (v secretStringValue) Set(value string) error {
+	*v.value = value
+	return nil
+}
+
+func (v secretStringValue) String() string {
+	if v.value == nil {
+		return ""
+	}
+	if *v.value != "" {
+		return "******"
+	}
+	return ""
 }
 
 // getParamVal returns the value of the parameter from the input map

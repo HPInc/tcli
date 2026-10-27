@@ -39,7 +39,8 @@ defaults:                     # applied to every step; step-level overrides win
   basePath: <string>          # endpoint overrides; usually per-module but
   scheme: <string>            #   settable pipeline-wide when a whole run
   server: <string>            #   targets a non-default host
-  jwt: <string>               # bearer token; prefer ${{ env.<VAR> }}
+  jwt: <string>               # bearer token; prefer ${{ env.<VAR> }};
+                              # automatically redacted from errors
 
 steps:                        # ordered list; execution order is a DAG derived
                               # from inputFrom + ${{ steps.* }} references +
@@ -72,6 +73,8 @@ steps:                        # ordered list; execution order is a DAG derived
     ignoreErrors: <bool>
     statusCode: <int|string>
     verbose: <bool>
+    jwt: <string>             # bearer token; prefer ${{ env.<VAR> }};
+                              # automatically redacted from errors
 ```
 
 ### Wiring: `inputFrom` vs `${{ steps.*.outputs.* }}`
