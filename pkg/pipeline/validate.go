@@ -84,6 +84,9 @@ func validateStepShape(s *Step) error {
 	if strings.TrimSpace(s.Command) == "" {
 		return fmt.Errorf("step %q: command is required", s.Name)
 	}
+	if s.If != "" && s.If != "failure()" && s.If != "always()" {
+		return fmt.Errorf("step %q: unsupported if expression %q; supported expressions are failure() and always()", s.Name, s.If)
+	}
 	// The command form is "<module> [<submodule>] <operation>"; at least
 	// module + operation so 2 tokens minimum, 3 maximum.
 	tokens := strings.Fields(s.Command)

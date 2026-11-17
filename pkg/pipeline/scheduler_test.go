@@ -6,6 +6,7 @@ package pipeline
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -346,4 +347,162 @@ func equalStrings(a, b []string) bool {
 		}
 	}
 	return true
+}
+
+func TestParse_IfExpressions(t *testing.T) {
+	for _, tc := range []struct {
+		field string
+		valid bool
+	}{
+		{"if: always()", true},
+		{"if: failure()", true},
+		{"if: success()", false},
+		{"always: true", false},
+	} {
+		t.Run(tc.field, func(t *testing.T) {
+			_, err := Parse([]byte("name: test\nsteps:\n  - name: cleanup\n    command: m op\n    " + tc.field + "\n"))
+			if (err == nil) != tc.valid {
+				t.Fatalf("Parse error = %v, valid = %v", err, tc.valid)
+			}
+		})
+	}
+}
+
+func TestExecutor_FailureCondition(t *testing.T) {
+	for _, fail := range []bool{false, true} {
+		t.Run(fmt.Sprintf("fail=%v", fail), func(t *testing.T) {
+			p, err := Parse([]byte(`
+name: failure-condition
+steps:
+  - name: work
+    command: m op
+  - name: skipped_after_failure
+    command: m op
+    dependsOn: [work]
+  - name: failure_handler
+    command: m op
+    if: failure()
+`))
+			if err != nil {
+				t.Fatal(err)
+			}
+			runner := &fakeRunner{}
+			if fail {
+				runner.errs = map[string]error{"work": errors.New("boom")}
+			}
+			state, err := NewExecutor(runner).Run(context.Background(), p)
+			if (err != nil) != fail {
+				t.Fatalf("run error = %v", err)
+			}
+			want := StatusSkipped
+			if fail {
+				want = StatusSucceeded
+			}
+			if got := state.Get("failure_handler").Status; got != want {
+				t.Fatalf("failure handler status = %v, want %v", got, want)
+			}
+		})
+	}
+}
+
+func TestExecutor_FailureHandlerWaitsForIndependentWork(t *testing.T) {
+	p, err := Parse([]byte(`
+name: failure-handler
+concurrency:
+  onFailure: drain
+steps:
+  - name: fail
+    command: m op
+  - name: slow
+    command: m op
+  - name: cleanup
+    command: m op
+    if: failure()
+`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	runner := &fakeRunner{errs: map[string]error{"fail": errors.New("boom")}, delays: map[string]time.Duration{"slow": 30 * time.Millisecond}}
+	state, err := NewExecutor(runner).Run(context.Background(), p)
+	if err == nil {
+		t.Fatal("expected failure")
+	}
+	if state.Get("cleanup").Status != StatusSucceeded {
+		t.Fatalf("cleanup = %+v", state.Get("cleanup"))
+	}
+	order := runner.callOrder()
+	if order[len(order)-1] != "cleanup" {
+		t.Fatalf("cleanup ran before work completed: %v", order)
+	}
+}
+
+func TestExecutor_AlwaysHandler(t *testing.T) {
+	for _, policy := range []string{"cancel", "drain"} {
+		for _, fail := range []bool{false, true} {
+			t.Run(fmt.Sprintf("%s/fail=%v", policy, fail), func(t *testing.T) {
+				p, err := Parse([]byte(fmt.Sprintf(`
+name: cleanup
+concurrency:
+  onFailure: %s
+steps:
+  - name: work
+    command: m op
+  - name: cleanup
+    command: m op
+    if: always()
+  - name: on_failure
+    command: m op
+    if: failure()
+`, policy)))
+				if err != nil {
+					t.Fatal(err)
+				}
+				runner := &fakeRunner{}
+				if fail {
+					runner.errs = map[string]error{"work": errors.New("boom")}
+				}
+				state, err := NewExecutor(runner).Run(context.Background(), p)
+				if (err != nil) != fail {
+					t.Fatalf("run error = %v", err)
+				}
+				if got := state.Get("cleanup").Status; got != StatusSucceeded {
+					t.Fatalf("cleanup = %v", got)
+				}
+				want := StatusSkipped
+				if fail {
+					want = StatusSucceeded
+				}
+				if got := state.Get("on_failure").Status; got != want {
+					t.Fatalf("on_failure = %v, want %v", got, want)
+				}
+				order := runner.callOrder()
+				if len(order) < 2 || order[0] != "work" || order[1] != "cleanup" {
+					t.Fatalf("order = %v", order)
+				}
+			})
+		}
+	}
+}
+
+func TestExecutor_AlwaysFailureTriggersFailureHandler(t *testing.T) {
+	p, err := Parse([]byte(`
+name: cleanup-failure
+steps:
+  - name: cleanup
+    command: m op
+    if: always()
+  - name: on_failure
+    command: m op
+    if: failure()
+`))
+	if err != nil {
+		t.Fatal(err)
+	}
+	state, err := NewExecutor(&fakeRunner{errs: map[string]error{"cleanup": errors.New("cleanup failed")}}).Run(context.Background(), p)
+	if err == nil || !strings.Contains(err.Error(), "cleanup failed") {
+		t.Fatalf("run error = %v", err)
+	}
+	if got := state.Get("on_failure").Status; got != StatusSucceeded {
+		t.Fatalf("on_failure = %v", got)
+	}
 }

@@ -43,8 +43,9 @@ func newScheduler(p *Pipeline, dag *DAG, state *State, runner Runner) *scheduler
 // run schedules every node and blocks until all nodes finish or the run is
 // cancelled by a failure. Returns the first non-continueOnError error.
 func (s *scheduler) run(ctx context.Context) error {
-	ctx, s.cancel = context.WithCancel(ctx)
-	defer s.cancel()
+	normalCtx, cancel := context.WithCancel(ctx)
+	s.cancel = cancel
+	defer cancel()
 
 	var wg sync.WaitGroup
 	done := make(chan *Node, len(s.dag.Nodes))
@@ -54,7 +55,7 @@ func (s *scheduler) run(ctx context.Context) error {
 		remaining[n] = len(n.Deps)
 		if remaining[n] == 0 {
 			wg.Add(1)
-			go s.execute(ctx, n, done, &wg)
+			go s.execute(s.stepContext(ctx, normalCtx, n), n, done, &wg)
 		}
 	}
 
@@ -64,12 +65,21 @@ func (s *scheduler) run(ctx context.Context) error {
 			remaining[child]--
 			if remaining[child] == 0 {
 				wg.Add(1)
-				go s.execute(ctx, child, done, &wg)
+				go s.execute(s.stepContext(ctx, normalCtx, child), child, done, &wg)
 			}
 		}
 	}
 	wg.Wait()
 	return s.firstErr
+}
+
+// stepContext keeps cleanup handlers independent of failure cancellation while
+// still respecting cancellation by the caller.
+func (s *scheduler) stepContext(ctx, normalCtx context.Context, n *Node) context.Context {
+	if n.Step.If == "failure()" || n.Step.If == "always()" {
+		return ctx
+	}
+	return normalCtx
 }
 
 // execute drives one node: acquire the concurrency slot, check parent
@@ -94,7 +104,8 @@ func (s *scheduler) execute(ctx context.Context, n *Node, done chan<- *Node, wg 
 		return
 	}
 
-	if !s.parentsOk(n) {
+	if (n.Step.If == "failure()" && !s.hasFailure()) ||
+		(n.Step.If == "" && !s.parentsOk(n)) {
 		s.state.Set(n.Step.Name, &StepResult{Status: StatusSkipped})
 		return
 	}
@@ -147,6 +158,13 @@ func (s *scheduler) finish(n *Node, r *StepResult) {
 	if s.onFail == OnFailureCancel && s.cancel != nil {
 		s.cancel()
 	}
+}
+
+// hasFailure reports a hard pipeline failure recorded before this step starts.
+func (s *scheduler) hasFailure() bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.firstErr != nil
 }
 
 // parentsOk returns true only when every dep step succeeded. A dep failure

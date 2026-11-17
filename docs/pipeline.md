@@ -64,6 +64,8 @@ steps:                        # ordered list; execution order is a DAG derived
     condition: <jqExpr>       # skip this step if expression is false/null
                               #   applied against pipeline state (see below)
     continueOnError: <bool>   # do not abort the pipeline if this step fails
+    if: failure()             # run after a hard pipeline failure
+                              # always() runs on success or failure
 
     # any tcli flag can be set as a top-level step field for convenience
     count: <int>
@@ -130,7 +132,16 @@ parameter, using the parameter name as declared in the spec.
    has `continueOnError: true` or `ignoreErrors: true`. On first failure,
    `concurrency.onFailure` decides whether in-flight sibling steps are
    cancelled (default) or drained.
-5. Pipeline exit code is 0 iff every non-`continueOnError` step succeeded.
+5. A step with `if: always()` waits for all ordinary steps to finish and runs
+   whether they succeeded, failed or were skipped. These handlers may run
+   concurrently; use `dependsOn` to order them.
+6. A step with `if: failure()` waits for all ordinary and `always()` steps to finish and runs
+   only after a hard pipeline failure. Failures suppressed by `continueOnError`
+   do not trigger it. Failure handlers may run concurrently; use `dependsOn` to
+   order them. Ordinary steps cannot depend on cleanup handlers, and `always()`
+   steps cannot depend on `failure()` handlers; these create dependency cycles. Caller cancellation, conditions and
+   interpolation still apply. Missing outputs can prevent interpolation.
+   An earlier failure remains the pipeline error even if cleanup succeeds.
 
 ### Parallelism
 

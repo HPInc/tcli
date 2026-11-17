@@ -26,7 +26,9 @@ type DAG struct {
 // BuildDAG derives the execution graph from a pipeline. Edges come from:
 //   - inputFrom on a step
 //   - explicit dependsOn entries
-//   - ${{ steps.<name>.xx }} references anywhere in the step's values
+//   - ${{ steps.<name>.xx }} references in supported step fields
+//   - all ordinary steps for an always() step
+//   - all non-failure handlers for a failure() step
 //
 // Returns an error if the graph contains a cycle. Callers should validate
 // the pipeline before calling BuildDAG (Load and Parse do this automatically).
@@ -41,6 +43,14 @@ func BuildDAG(p *Pipeline) (*DAG, error) {
 
 	for _, n := range nodes {
 		edges := edgesFor(n.Step)
+		if n.Step.If == "failure()" || n.Step.If == "always()" {
+			for _, other := range nodes {
+				if (n.Step.If == "failure()" && other.Step.If != "failure()") ||
+					(n.Step.If == "always()" && other.Step.If == "") {
+					edges[other.Step.Name] = struct{}{}
+				}
+			}
+		}
 		for dep := range edges {
 			parent := byName[dep]
 			n.Deps = append(n.Deps, parent)

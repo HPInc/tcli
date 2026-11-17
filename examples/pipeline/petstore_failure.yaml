@@ -1,0 +1,38 @@
+# Build the current code: make build
+# Start the local server: make local_server
+# Set PETSTORE_SERVER to its printed host:port, then run:
+# TCLI_CONFIG_ROOT=tools bin/tcli pipeline run -v examples/pipeline/petstore_failure.yaml
+# The read intentionally expects 404, so the pipeline fails and failure_cleanup runs.
+# Change expectedStatus to 200 to see failure_cleanup skip.
+name: petstore-failure-teardown
+variables:
+  petId: 4242
+  expectedStatus: 404
+
+defaults:
+  scheme: http
+  server: ${{ env.PETSTORE_SERVER }}
+  basePath: /v2
+  retryCount: 0
+
+steps:
+- name: create
+  command: petstore pet addPet
+  body:
+    id: ${{ variables.petId }}
+    name: teardown-example
+    photoUrls: []
+
+- name: read
+  command: petstore pet getPetById
+  dependsOn: [create]
+  params:
+    petId: ${{ variables.petId }}
+  statusCode: ${{ variables.expectedStatus }}
+
+# Run after all ordinary steps finish, only if the pipeline failed.
+- name: failure_cleanup
+  command: petstore pet deletePet
+  if: failure()
+  params:
+    petId: ${{ variables.petId }}

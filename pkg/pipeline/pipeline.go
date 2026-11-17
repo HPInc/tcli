@@ -53,6 +53,7 @@ type Step struct {
 	DependsOn       []string `yaml:"dependsOn,omitempty"`
 	Condition       string   `yaml:"condition,omitempty"`
 	ContinueOnError bool     `yaml:"continueOnError,omitempty"`
+	If              string   `yaml:"if,omitempty"`
 
 	Count        int     `yaml:"count,omitempty"`
 	Parallelism  *int    `yaml:"parallelism,omitempty"`

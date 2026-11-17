@@ -68,5 +68,8 @@ ci_clean: clean
 install: build
 	./tools/install.sh
 
+local_server:
+	go run examples/_local_server/main.go
+
 .PHONY: all build vet imports tidy sanity lint gosec docker trivy clean install
 .SILENT:

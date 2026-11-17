@@ -1,0 +1,37 @@
+# Build: make build
+# Start the local server: make local_server
+# Set PETSTORE_SERVER to its printed host:port, then run:
+# TCLI_CONFIG_ROOT=tools bin/tcli pipeline run -v examples/pipeline/petstore_always.yaml
+# expectedStatus: 404 deliberately fails the read; set it to 200 for success.
+# Cleanup runs in both cases.
+name: petstore-always-teardown
+variables:
+  petId: 4242
+  expectedStatus: 404
+
+defaults:
+  scheme: http
+  server: ${{ env.PETSTORE_SERVER }}
+  basePath: /v2
+  retryCount: 0
+
+steps:
+- name: create
+  command: petstore pet addPet
+  body:
+    id: ${{ variables.petId }}
+    name: teardown-example
+    photoUrls: []
+
+- name: read
+  command: petstore pet getPetById
+  dependsOn: [create]
+  params:
+    petId: ${{ variables.petId }}
+  statusCode: ${{ variables.expectedStatus }}
+
+- name: cleanup
+  command: petstore pet deletePet
+  if: always()
+  params:
+    petId: ${{ variables.petId }}
