@@ -8,7 +8,9 @@ go build -o bin/tcli \
 -ldflags "-s -w" cmd/main.go
 
 # use a minimal alpine image
-FROM alpine:3.24.3
+FROM alpine:3.24.4
+
+RUN apk update && apk upgrade zlib
 
 # make tcli available in path
 COPY --from=builder /go/src/tcli/bin/tcli /usr/local/bin/tcli
