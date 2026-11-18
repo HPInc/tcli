@@ -68,6 +68,17 @@ func tcliBinary(t *testing.T) string {
 // yamlTemplate must contain one %s where the server host:port goes.
 func runPipelineAgainst(t *testing.T, yamlTemplate string) *pipeline.State {
 	t.Helper()
+	state, err := tryPipelineAgainst(t, yamlTemplate)
+	if err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+	return state
+}
+
+// tryPipelineAgainst is runPipelineAgainst for a test that expects the run
+// to fail: it returns the error and the state of the steps that ran.
+func tryPipelineAgainst(t *testing.T, yamlTemplate string) (*pipeline.State, error) {
+	t.Helper()
 
 	binary := tcliBinary(t)
 	server := petstoretest.NewServer()
@@ -94,11 +105,7 @@ func runPipelineAgainst(t *testing.T, yamlTemplate string) *pipeline.State {
 		t.Fatalf("Load: %v", err)
 	}
 	runner := &pipeline.SubprocessRunner{Binary: binary}
-	state, err := pipeline.NewExecutor(runner).Run(context.Background(), p)
-	if err != nil {
-		t.Fatalf("Run: %v", err)
-	}
-	return state
+	return pipeline.NewExecutor(runner).Run(context.Background(), p)
 }
 
 func assertSucceeded(t *testing.T, state *pipeline.State, names ...string) {

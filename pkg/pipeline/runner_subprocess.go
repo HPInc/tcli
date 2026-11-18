@@ -185,8 +185,15 @@ func encodeValue(v any) (string, error) {
 // yields one record per element (matching how a downstream jq expression
 // would iterate them). Scalar top-level values are ignored — no established
 // convention for turning a bare number/string into a record.
+//
+// Output that cannot be decoded and does not start with '{' or '[' (a bare
+// id, an HTML page, a multipart body) is a text response: it becomes one
+// record {"text": <output, outer whitespace trimmed>}, so a step's outputs
+// can read it. Output that starts with '{' or '[' and fails to decode is
+// malformed JSON and stays an error.
 func parseRecords(data []byte) ([]Record, error) {
-	if len(bytes.TrimSpace(data)) == 0 {
+	trimmed := bytes.TrimSpace(data)
+	if len(trimmed) == 0 {
 		return nil, nil
 	}
 	dec := json.NewDecoder(bytes.NewReader(data))
@@ -196,6 +203,9 @@ func parseRecords(data []byte) ([]Record, error) {
 		if err := dec.Decode(&v); err != nil {
 			if err == io.EOF {
 				return out, nil
+			}
+			if trimmed[0] != '{' && trimmed[0] != '[' {
+				return []Record{{"text": string(trimmed)}}, nil
 			}
 			return nil, fmt.Errorf("decode tcli output: %w", err)
 		}

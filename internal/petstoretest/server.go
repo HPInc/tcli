@@ -44,6 +44,8 @@ func NewServer() *httptest.Server {
 	mux.HandleFunc("GET /v2/pet/findByStatus", st.findByStatus)
 	mux.HandleFunc("GET /v2/pet/{petId}", st.getPetByID)
 	mux.HandleFunc("DELETE /v2/pet/{petId}", st.deletePet)
+	mux.HandleFunc("GET /v2/user/login", loginUser)
+	mux.HandleFunc("GET /v2/user/logout", logoutUser)
 	return httptest.NewServer(mux)
 }
 
@@ -121,6 +123,17 @@ func (s *store) findByStatus(w http.ResponseWriter, r *http.Request) {
 	}
 	s.mu.Unlock()
 	writeJSON(w, http.StatusOK, out)
+}
+
+// loginUser answers like the real petstore: a plain-text session string, not JSON.
+func loginUser(w http.ResponseWriter, _ *http.Request) {
+	w.Header().Set("Content-Type", "text/plain")
+	_, _ = w.Write([]byte("logged in user session:1234"))
+}
+
+// logoutUser answers 200 with no body at all.
+func logoutUser(w http.ResponseWriter, _ *http.Request) {
+	w.WriteHeader(http.StatusOK)
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {
