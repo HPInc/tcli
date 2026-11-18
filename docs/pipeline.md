@@ -98,6 +98,25 @@ pattern). If a downstream step references `${{ steps.X.outputs.var }}`
 where `X` produced N responses, the value is the last one captured.
 For bulk data flow between multi-record steps, use `inputFrom` instead.
 
+**Responses that are not JSON.** A response that cannot be read as JSON and
+does not start with `{` or `[` (a bare id, an HTML page, a multipart body)
+becomes one record, `{"text": "<the body, outer whitespace trimmed>"}`, so
+`outputs:` can read it:
+
+```yaml
+outputs:
+  runId: '.text'                                         # a bare id
+  name: '.text | capture("name=(?<n>[a-z]+)") | .n'      # a value inside a longer body
+```
+
+A jq regex can pull the parts out of a multipart body; use `(?s)` inside the
+pattern for a dot that matches newlines (gojq has no `s` flag). Three cases
+give no record, so `outputs:` is not evaluated and cannot fail the step:
+an empty body, a body that is only whitespace, and a bare JSON scalar such as
+`12345` or `"abc"`. Check such a step with `statusCode`. A body that starts
+with `{` or `[` and is not valid JSON is still an error. `format:` needs JSON:
+on a plain-text or empty body the tcli process exits 1, so leave `format` off.
+
 ### Reserved keys
 
 The following tcli control flags MUST be set via top-level `camelCase` step
